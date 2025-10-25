@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "tmod_fabric",
+  "version": "${version}",
+  "name": "TMod Fabric",
+  "description": "A basic Fabric mod for Minecraft 1.21.8",
+  "authors": [
+    "Your Name"
+  ],
+  "contact": {
+    "homepage": "https://github.com/yourusername/tmod_fabric",
+    "sources": "https://github.com/yourusername/tmod_fabric"
+  },
+  "license": "MIT",
+  "icon": "assets/tmod_fabric/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.example.tmod_fabric.TModFabric"
+    ],
+    "client": [
+      "com.example.tmod_fabric.TModFabricClient"
+    ]
+  },
+  "mixins": [
+    "tmod_fabric.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.11",
+    "minecraft": "~1.21.8",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}

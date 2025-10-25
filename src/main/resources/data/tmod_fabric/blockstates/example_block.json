@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "tmod_fabric:block/example_block"
+    }
+  }
+}
