@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.8-SNAPSHOT'
+    id 'fabric-loom' version '1.10.1'
     id 'maven-publish'
 }
 
@@ -19,15 +19,11 @@ repositories {
 }
 
 loom {
-    splitEnvironmentSourceSets()
-
     mods {
         "tmod_fabric" {
             sourceSet sourceSets.main
-            sourceSet sourceSets.client
         }
     }
-
 }
 
 dependencies {
@@ -36,15 +32,19 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    // Fabric API. This is technically optional, but you probably want it anyway.
+    // Fabric API
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    
+    // Gson for JSON parsing (included with Minecraft)
+    implementation "com.google.code.gson:gson:2.10.1"
 }
 
 processResources {
-    inputs.property "version", project.version
+    def projectVersion = project.version
+    inputs.property "version", projectVersion
 
     filesMatching("fabric.mod.json") {
-        expand "version": project.version
+        expand "version": projectVersion
     }
 }
 
@@ -65,7 +65,6 @@ java {
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
-    archivesBaseName = project.archives_base_name
     // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
     // if it is present.
     // If you remove this line, sources will not be generated.

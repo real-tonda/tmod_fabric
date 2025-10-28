@@ -1,12 +1,11 @@
 # TMod Fabric
 
-A basic Fabric mod for Minecraft 1.21.8.
+A server-side Fabric mod for Minecraft 1.21.8.
 
 ## Features
 
-- Example block and item
-- Basic crafting recipes
-- Proper mod structure for Fabric 1.21.8
+- Server-side mod structure for Fabric 1.21.8
+- Ready for server-side logic implementation
 
 ## Building
 

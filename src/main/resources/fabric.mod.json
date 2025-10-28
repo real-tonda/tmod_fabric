@@ -3,30 +3,27 @@
   "id": "tmod_fabric",
   "version": "${version}",
   "name": "TMod Fabric",
-  "description": "A basic Fabric mod for Minecraft 1.21.8",
+  "description": "A Fabric mod for Minecraft 1.21.8+",
   "authors": [
-    "Your Name"
+    "real-tonda AKA TogunGaming"
   ],
   "contact": {
-    "homepage": "https://github.com/yourusername/tmod_fabric",
-    "sources": "https://github.com/yourusername/tmod_fabric"
+    "homepage": "https://github.com/real-tonda/tmod_fabric",
+    "sources": "https://github.com/real-tonda/tmod_fabric"
   },
   "license": "MIT",
   "icon": "assets/tmod_fabric/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.example.tmod_fabric.TModFabric"
-    ],
-    "client": [
-      "com.example.tmod_fabric.TModFabricClient"
+      "com.togun.tmod.TModFabric"
     ]
   },
   "mixins": [
     "tmod_fabric.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.16.11",
+    "fabricloader": ">=0.16.0",
     "minecraft": "~1.21.8",
     "java": ">=21",
     "fabric-api": "*"
