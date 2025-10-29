@@ -5,7 +5,10 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "DeOpCommandMixin",
-    "PlayerManagerMixin"
+    "FreezeMixin",
+    "GodModeMixin",
+    "PlayerManagerMixin",
+    "ServerCommonNetworkHandlerAccessor"
   ],
   "client": [
   ],

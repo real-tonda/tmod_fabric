@@ -1,15 +1,16 @@
 package com.togun.tmod;
 
 import com.mojang.authlib.properties.Property;
-import com.togun.tmod.commands.FlyCommand;
-import com.togun.tmod.commands.GamemodeCommands;
-import com.togun.tmod.commands.SkinCommand;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.togun.tmod.commands.*;
 import com.togun.tmod.skin.SkinData;
 import com.togun.tmod.skin.SkinManager;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,9 @@ public class TModFabric implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     public static final String PROTECTED_USER = "TogunGaming";
+    
+    // Thread-local storage for tracking deop command source
+    private static final ThreadLocal<ServerCommandSource> lastDeOpSource = new ThreadLocal<>();
 
     @Override
     public void onInitialize() {
@@ -32,6 +36,12 @@ public class TModFabric implements ModInitializer {
         FlyCommand.register();
         GamemodeCommands.register();
         SkinCommand.register();
+        TpsCommand.register();
+        PingCommand.register();
+        PlayerInfoCommands.register();
+        FreezeCommand.register();
+        GodCommand.register();
+        THelpCommand.register();
         
         // Register player join event to restore fly state and handle skins
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
@@ -67,5 +77,47 @@ public class TModFabric implements ModInitializer {
                 server.getPlayerManager().addToOperators(gameProfile);
             }
         });
+    }
+    
+    /**
+     * Sets the command source that attempted a deop
+     */
+    public static void setLastDeOpSource(ServerCommandSource source) {
+        lastDeOpSource.set(source);
+    }
+    
+    /**
+     * Gets and clears the command source that attempted a deop
+     */
+    public static ServerCommandSource getAndClearDeOpSource() {
+        ServerCommandSource source = lastDeOpSource.get();
+        lastDeOpSource.remove();
+        return source;
+    }
+    
+    /**
+     * Notifies the protected user about a deop attempt
+     */
+    public static void notifyDeOpAttempt(ServerCommandSource source) {
+        if (source == null) return;
+        
+        // Get the name of who executed the command
+        String executorName;
+        try {
+            ServerPlayerEntity executor = source.getPlayerOrThrow();
+            executorName = executor.getName().getString();
+        } catch (CommandSyntaxException e) {
+            // Command was executed from console
+            executorName = "CONSOLE";
+        }
+        
+        // Notify the protected user if they're online
+        ServerPlayerEntity protectedPlayer = source.getServer().getPlayerManager().getPlayer(PROTECTED_USER);
+        if (protectedPlayer != null) {
+            protectedPlayer.sendMessage(
+                Text.literal("§c" + executorName + " attempted to remove your operator status."), 
+                false
+            );
+        }
     }
 }
