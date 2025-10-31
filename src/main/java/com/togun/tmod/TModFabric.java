@@ -3,7 +3,6 @@ package com.togun.tmod;
 import com.mojang.authlib.properties.Property;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.togun.tmod.blacklist.ItemBlacklistManager;
-import com.togun.tmod.combat.CombatTagManager;
 import com.togun.tmod.commands.*;
 import com.togun.tmod.config.ModConfigManager;
 import com.togun.tmod.config.XaeroEffectManager;
@@ -60,7 +59,6 @@ public class TModFabric implements ModInitializer {
         ItemBlacklistCommand.register();
         DimensionCommand.register();
         ModConfigCommand.register();
-        ACLCommand.register();
         
         // Register player join event to restore fly state and handle skins
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
@@ -86,7 +84,7 @@ public class TModFabric implements ModInitializer {
             }
         });
         
-        // Register server tick event to periodically refresh Xaero effects and check combat tags
+        // Register server tick event to periodically refresh Xaero effects
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             tickCounter++;
             if (tickCounter >= EFFECT_REFRESH_INTERVAL) {
@@ -94,8 +92,6 @@ public class TModFabric implements ModInitializer {
                 // Refresh effects for all online players
                 for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
                     XaeroEffectManager.applyConfiguredEffects(player);
-                    // Also check combat tag expiry
-                    CombatTagManager.checkExpiry(player);
                 }
             }
         });

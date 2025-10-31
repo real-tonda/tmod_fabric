@@ -39,8 +39,6 @@ public class THelpCommand {
         TMOD_COMMANDS.put("dim", new CommandInfo("/dim <dimension>", "Teleport to a dimension", 4));
         TMOD_COMMANDS.put("blacklist", new CommandInfo("/blacklist <add|remove|list|clear>", "Manage item blacklist", 4));
         TMOD_COMMANDS.put("modcfg", new CommandInfo("/modcfg <list|enable|disable|toggle|info>", "Configure mod features", 4));
-        TMOD_COMMANDS.put("acl", new CommandInfo("/acl <on|off>", "Toggle Anti-Combat Log system", 4));
-        TMOD_COMMANDS.put("combat", new CommandInfo("/combat", "Check your combat status", 0));
     }
     
     public static void register() {

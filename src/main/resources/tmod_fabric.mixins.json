@@ -10,11 +10,9 @@
     "GodModeMixin",
     "ItemUseMixin",
     "LivingEntityMixin",
-    "PlayerCombatMixin",
     "PlayerManagerMixin",
     "ProjectileEntityMixin",
     "ServerCommonNetworkHandlerAccessor",
-    "ServerPlayNetworkHandlerMixin",
     "ServerPlayerEntityMixin"
   ],
   "client": [
