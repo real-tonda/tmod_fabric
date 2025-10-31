@@ -4,11 +4,18 @@
   "package": "com.togun.tmod.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "BlockPlacementMixin",
     "DeOpCommandMixin",
     "FreezeMixin",
     "GodModeMixin",
+    "ItemUseMixin",
+    "LivingEntityMixin",
+    "PlayerCombatMixin",
     "PlayerManagerMixin",
-    "ServerCommonNetworkHandlerAccessor"
+    "ProjectileEntityMixin",
+    "ServerCommonNetworkHandlerAccessor",
+    "ServerPlayNetworkHandlerMixin",
+    "ServerPlayerEntityMixin"
   ],
   "client": [
   ],

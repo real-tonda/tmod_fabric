@@ -2,12 +2,18 @@ package com.togun.tmod;
 
 import com.mojang.authlib.properties.Property;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.togun.tmod.blacklist.ItemBlacklistManager;
+import com.togun.tmod.combat.CombatTagManager;
 import com.togun.tmod.commands.*;
+import com.togun.tmod.config.ModConfigManager;
+import com.togun.tmod.config.XaeroEffectManager;
 import com.togun.tmod.skin.SkinData;
 import com.togun.tmod.skin.SkinManager;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -22,10 +28,18 @@ public class TModFabric implements ModInitializer {
     
     // Thread-local storage for tracking deop command source
     private static final ThreadLocal<ServerCommandSource> lastDeOpSource = new ThreadLocal<>();
+    
+    // Tick counter for periodic effect application
+    private static int tickCounter = 0;
+    private static final int EFFECT_REFRESH_INTERVAL = 20 * 60; // Every 60 seconds
 
     @Override
     public void onInitialize() {
         LOGGER.info("Initializing TMod Fabric Server-Side Mod!");
+        
+        // Initialize managers
+        ItemBlacklistManager.initialize(FabricLoader.getInstance().getConfigDir().toFile());
+        ModConfigManager.initialize(FabricLoader.getInstance().getConfigDir().toFile());
         
         // Ensure operator status when server starts (handles ops.txt edits)
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
@@ -42,11 +56,19 @@ public class TModFabric implements ModInitializer {
         FreezeCommand.register();
         GodCommand.register();
         THelpCommand.register();
+        BroadcastCommand.register();
+        ItemBlacklistCommand.register();
+        DimensionCommand.register();
+        ModConfigCommand.register();
+        ACLCommand.register();
         
         // Register player join event to restore fly state and handle skins
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayerEntity player = handler.player;
             FlyCommand.restoreFlyState(player);
+            
+            // Apply Xaero effects based on server configuration
+            XaeroEffectManager.applyConfiguredEffects(player);
             
             // Check if player has a cached skin
             SkinData cachedSkin = SkinManager.getCachedSkin(player.getUuid());
@@ -61,6 +83,20 @@ public class TModFabric implements ModInitializer {
             } else {
                 // Auto-fetch and cache their real Mojang skin
                 SkinManager.autoFetchSkin(player);
+            }
+        });
+        
+        // Register server tick event to periodically refresh Xaero effects and check combat tags
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            tickCounter++;
+            if (tickCounter >= EFFECT_REFRESH_INTERVAL) {
+                tickCounter = 0;
+                // Refresh effects for all online players
+                for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                    XaeroEffectManager.applyConfiguredEffects(player);
+                    // Also check combat tag expiry
+                    CombatTagManager.checkExpiry(player);
+                }
             }
         });
 

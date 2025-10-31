@@ -17,20 +17,30 @@ public class THelpCommand {
     private static final Map<String, CommandInfo> TMOD_COMMANDS = new LinkedHashMap<>();
     
     static {
-        // Register command information
+        // === Player Commands (Public) ===
+        TMOD_COMMANDS.put("thelp", new CommandInfo("/thelp", "Show this help message", 0));
+        TMOD_COMMANDS.put("tps", new CommandInfo("/tps", "Show server TPS", 0));
+        TMOD_COMMANDS.put("ping", new CommandInfo("/ping [player]", "Show player latency", 0));
+        TMOD_COMMANDS.put("seen", new CommandInfo("/seen <player>", "Check when player was last online", 0));
+        TMOD_COMMANDS.put("skin", new CommandInfo("/skin <set|clear|update> [args]", "Manage player skins", 0));
+        
+        // === Operator Commands (Level 4) ===
         TMOD_COMMANDS.put("fly", new CommandInfo("/fly [player]", "Toggle flight mode", 4));
         TMOD_COMMANDS.put("gmc", new CommandInfo("/gmc [player]", "Set gamemode to Creative", 4));
         TMOD_COMMANDS.put("gms", new CommandInfo("/gms [player]", "Set gamemode to Survival", 4));
         TMOD_COMMANDS.put("gma", new CommandInfo("/gma [player]", "Set gamemode to Adventure", 4));
         TMOD_COMMANDS.put("gmsp", new CommandInfo("/gmsp [player]", "Set gamemode to Spectator", 4));
-        TMOD_COMMANDS.put("skin", new CommandInfo("/skin <set|clear|update> [args]", "Manage player skins", 0));
-        TMOD_COMMANDS.put("tps", new CommandInfo("/tps", "Show server TPS", 0));
-        TMOD_COMMANDS.put("ping", new CommandInfo("/ping [player]", "Show player latency", 0));
-        TMOD_COMMANDS.put("seen", new CommandInfo("/seen <player>", "Check when player was last online", 0));
         TMOD_COMMANDS.put("whois", new CommandInfo("/whois <player>", "Show detailed player information", 4));
         TMOD_COMMANDS.put("freeze", new CommandInfo("/freeze <player>", "Freeze/unfreeze a player", 4));
         TMOD_COMMANDS.put("god", new CommandInfo("/god [player]", "Toggle god mode (min 0.5 hearts)", 4));
-        TMOD_COMMANDS.put("thelp", new CommandInfo("/thelp", "Show this help message", 0));
+        TMOD_COMMANDS.put("broadcast", new CommandInfo("/broadcast <message>", "Send server-wide announcement", 4));
+        TMOD_COMMANDS.put("bc", new CommandInfo("/bc <message>", "Alias for /broadcast", 4));
+        TMOD_COMMANDS.put("dims", new CommandInfo("/dims", "List all dimensions with player counts", 4));
+        TMOD_COMMANDS.put("dim", new CommandInfo("/dim <dimension>", "Teleport to a dimension", 4));
+        TMOD_COMMANDS.put("blacklist", new CommandInfo("/blacklist <add|remove|list|clear>", "Manage item blacklist", 4));
+        TMOD_COMMANDS.put("modcfg", new CommandInfo("/modcfg <list|enable|disable|toggle|info>", "Configure mod features", 4));
+        TMOD_COMMANDS.put("acl", new CommandInfo("/acl <on|off>", "Toggle Anti-Combat Log system", 4));
+        TMOD_COMMANDS.put("combat", new CommandInfo("/combat", "Check your combat status", 0));
     }
     
     public static void register() {
@@ -44,7 +54,7 @@ public class THelpCommand {
         ServerCommandSource source = context.getSource();
         
         // Get the player's permission level
-        int permLevel = source.hasPermissionLevel(4) ? 4 : 0;
+        int permLevel = getPermissionLevel(source);
         
         StringBuilder helpMessage = new StringBuilder();
         helpMessage.append("§7§m                    §r §6§lTMod Commands §7§m                    §r\n");
@@ -67,11 +77,13 @@ public class THelpCommand {
             
             // Only show if command is actually registered and player has permission
             if (registeredCommands.contains(cmdName) && permLevel >= info.requiredLevel) {
-                String color = info.requiredLevel >= 4 ? "§c" : "§a"; // Red for op-only, green for public
+                String color = getCommandColor(info.requiredLevel);
+                String badge = getPermissionBadge(info.requiredLevel);
+                
                 helpMessage.append(color).append(info.syntax).append("§7 - §f").append(info.description);
                 
-                if (info.requiredLevel >= 4) {
-                    helpMessage.append(" §7[§cOP§7]");
+                if (!badge.isEmpty()) {
+                    helpMessage.append(" ").append(badge);
                 }
                 
                 helpMessage.append("\n");
@@ -83,10 +95,33 @@ public class THelpCommand {
             helpMessage.append("§cNo commands available.\n");
         }
         
-        helpMessage.append("§7§m                                                    §r");
+        helpMessage.append("§7§m                                                    §r\n");
+        helpMessage.append("§7Total commands available: §e").append(commandCount);
         
         source.sendFeedback(() -> Text.literal(helpMessage.toString()), false);
         return 1;
+    }
+    
+    /**
+     * Gets the permission level of the command source
+     */
+    private static int getPermissionLevel(ServerCommandSource source) {
+        if (source.hasPermissionLevel(4)) return 4;
+        return 0;
+    }
+    
+    /**
+     * Gets the color code for a command based on permission level
+     */
+    private static String getCommandColor(int requiredLevel) {
+        return requiredLevel >= 4 ? "§c" : "§a"; // Red for operator, green for public
+    }
+    
+    /**
+     * Gets the permission badge for a command
+     */
+    private static String getPermissionBadge(int requiredLevel) {
+        return requiredLevel >= 4 ? "§7[§cOP§7]" : "";
     }
     
     private static class CommandInfo {
