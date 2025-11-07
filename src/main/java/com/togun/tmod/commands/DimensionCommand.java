@@ -116,7 +116,7 @@ public class DimensionCommand {
         Vec3d targetPos = new Vec3d(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
         
         // Teleport the player
-        player.teleport(targetWorld, targetPos.x, targetPos.y, targetPos.z, java.util.Set.of(), player.getYaw(), player.getPitch(), false);
+        player.teleport(targetWorld, targetPos.x, targetPos.y, targetPos.z, player.getYaw(), player.getPitch());
         
         String dimensionName = getDimensionDisplayName(worldKey);
         source.sendFeedback(() -> Text.literal("§aTeleported to dimension: §e" + dimensionName), false);

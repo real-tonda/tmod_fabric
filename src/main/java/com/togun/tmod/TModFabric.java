@@ -8,6 +8,7 @@ import com.togun.tmod.config.ModConfigManager;
 import com.togun.tmod.config.XaeroEffectManager;
 import com.togun.tmod.skin.SkinData;
 import com.togun.tmod.skin.SkinManager;
+import com.togun.tmod.util.TickMetrics;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -86,6 +87,7 @@ public class TModFabric implements ModInitializer {
         
         // Register server tick event to periodically refresh Xaero effects
         ServerTickEvents.END_SERVER_TICK.register(server -> {
+            TickMetrics.recordTick();
             tickCounter++;
             if (tickCounter >= EFFECT_REFRESH_INTERVAL) {
                 tickCounter = 0;

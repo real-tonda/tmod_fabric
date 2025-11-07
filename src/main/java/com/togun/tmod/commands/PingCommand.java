@@ -3,7 +3,6 @@ package com.togun.tmod.commands;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.togun.tmod.mixin.ServerCommonNetworkHandlerAccessor;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
@@ -45,7 +44,7 @@ public class PingCommand {
             return 0;
         }
         
-        int ping = ((ServerCommonNetworkHandlerAccessor) player.networkHandler).getLatency();
+        int ping = player.pingMilliseconds;
         String pingColor = getPingColor(ping);
         
         source.sendFeedback(() -> Text.literal(
@@ -65,7 +64,7 @@ public class PingCommand {
             return 0;
         }
         
-        int ping = ((ServerCommonNetworkHandlerAccessor) targetPlayer.networkHandler).getLatency();
+        int ping = targetPlayer.pingMilliseconds;
         String pingColor = getPingColor(ping);
         String targetName = targetPlayer.getName().getString();
         

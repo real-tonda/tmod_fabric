@@ -3,7 +3,6 @@ package com.togun.tmod.commands;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.togun.tmod.mixin.ServerCommonNetworkHandlerAccessor;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -77,7 +76,7 @@ public class PlayerInfoCommands {
         String uuid = player.getUuidAsString();
         String gamemode = player.interactionManager.getGameMode().name();
         String world = player.getWorld().getRegistryKey().getValue().toString();
-        int ping = ((ServerCommonNetworkHandlerAccessor) player.networkHandler).getLatency();
+        int ping = player.pingMilliseconds;
         String ip = player.getIp();
         boolean isOp = source.getServer().getPlayerManager().isOperator(player.getGameProfile());
         

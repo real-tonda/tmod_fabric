@@ -1,6 +1,6 @@
 # TMod Fabric
 
-A server-side Fabric mod for Minecraft 1.21.8.
+A server-side Fabric mod for Minecraft 1.20.1.
 
 ### Coded with the help of AI
 
@@ -33,7 +33,6 @@ A server-side Fabric mod for Minecraft 1.21.8.
         /dim <dimension> - Teleport to a dimension
         /blacklist <add|remove|list|clear> - Manage item blacklist *currently broken*
         /modcfg <list|enable|disable|toggle|info> - Configure mod features
-    }
 
 ## Building
 

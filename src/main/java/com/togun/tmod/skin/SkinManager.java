@@ -6,6 +6,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.togun.tmod.TModFabric;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -197,7 +198,18 @@ public class SkinManager {
                     
                     // Apply it to their GameProfile
                     player.getServer().execute(() -> {
+                        if (player.isDisconnected()) {
+                            return;
+                        }
+
                         applySkin(player, skinData);
+
+                        if (skinData.isOfficial()) {
+                            player.sendMessage(
+                                Text.literal("§aYour Mojang skin was synced! §eReconnect once to see it in-game."),
+                                false
+                            );
+                        }
                     });
                 } else {
                     TModFabric.LOGGER.warn("Failed to fetch skin data for: " + playerName);

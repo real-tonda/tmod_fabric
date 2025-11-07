@@ -3,7 +3,6 @@ package com.togun.tmod.mixin;
 import com.togun.tmod.commands.GodCommand;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,7 +17,7 @@ public class GodModeMixin {
      * They can take damage but health never goes below 1.0 (0.5 hearts)
      */
     @Inject(method = "damage", at = @At("RETURN"))
-    private void preventDeathInGodMode(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+    private void preventDeathInGodMode(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
         
         if (GodCommand.hasGodMode(player.getUuid())) {
@@ -42,9 +41,6 @@ public class GodModeMixin {
             ci.cancel();
             
             // Restore health to 0.5 hearts
-            player.setHealth(1.0f);
-            
-            // Clear death timer if it was set
             player.setHealth(1.0f);
         }
     }

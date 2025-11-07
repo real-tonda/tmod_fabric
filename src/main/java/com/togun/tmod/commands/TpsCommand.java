@@ -1,6 +1,7 @@
 package com.togun.tmod.commands;
 
 import com.mojang.brigadier.context.CommandContext;
+import com.togun.tmod.util.TickMetrics;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -18,10 +19,10 @@ public class TpsCommand {
     
     private static int execute(CommandContext<ServerCommandSource> context) {
         ServerCommandSource source = context.getSource();
-        
-        // Get TPS from server
-        double tps = Math.min(20.0, 1000.0 / source.getServer().getAverageTickTime());
-        
+
+        double averageTickTimeMs = TickMetrics.getAverageTickTimeMs();
+        double tps = averageTickTimeMs > 0.0 ? Math.min(20.0, 1000.0 / averageTickTimeMs) : 20.0;
+
         // Format TPS with color coding
         String tpsColor;
         if (tps >= 19.0) {
@@ -34,12 +35,9 @@ public class TpsCommand {
             tpsColor = "§c"; // Red - Poor
         }
         
-        // Get average tick time in milliseconds
-        float avgTickTime = source.getServer().getAverageTickTime();
-        
         source.sendFeedback(() -> Text.literal(
             "§7[§bTPS§7] §fCurrent TPS: " + tpsColor + String.format("%.2f", tps) + 
-            " §7(Avg Tick: §f" + String.format("%.2f", avgTickTime) + "ms§7)"
+            " §7(Avg Tick: §f" + String.format("%.2f", averageTickTimeMs) + "ms§7)"
         ), false);
         
         return 1;

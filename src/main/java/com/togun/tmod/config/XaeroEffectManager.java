@@ -5,13 +5,11 @@ import com.togun.tmod.config.ModConfigManager.ModFeature;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Manages Xaero's status effects for server-side feature control
@@ -20,7 +18,7 @@ import java.util.Optional;
 public class XaeroEffectManager {
     
     private static final Map<ModFeature, String> FEATURE_TO_EFFECT = new HashMap<>();
-    private static final int EFFECT_DURATION = 20 * 60 * 60 * 12; // 5 minutes in ticks
+    private static final int EFFECT_DURATION = 20 * 60 * 5; // 5 minutes in ticks
     private static final int EFFECT_AMPLIFIER = 0;
     
     static {
@@ -59,17 +57,15 @@ public class XaeroEffectManager {
             Identifier identifier = Identifier.tryParse(effectId);
             if (identifier == null) return;
             
-            Optional<RegistryEntry.Reference<StatusEffect>> effectOpt = Registries.STATUS_EFFECT.getEntry(identifier);
-            if (effectOpt.isEmpty()) {
+            StatusEffect effect = Registries.STATUS_EFFECT.get(identifier);
+            if (effect == null) {
                 // Effect not found - Xaero's might not be installed on client
                 // This is fine, we just can't enforce it
                 return;
             }
-            
-            RegistryEntry<StatusEffect> effectEntry = effectOpt.get();
-            
+
             // Check if player already has this effect
-            StatusEffectInstance existing = player.getStatusEffect(effectEntry);
+            StatusEffectInstance existing = player.getStatusEffect(effect);
             if (existing != null && existing.getDuration() > 20 * 30) {
                 // Player already has effect with more than 30 seconds remaining
                 return;
@@ -77,7 +73,7 @@ public class XaeroEffectManager {
             
             // Apply the effect (invisible, long duration)
             StatusEffectInstance effectInstance = new StatusEffectInstance(
-                effectEntry,
+                effect,
                 EFFECT_DURATION,
                 EFFECT_AMPLIFIER,
                 false, // ambient
@@ -102,10 +98,10 @@ public class XaeroEffectManager {
             Identifier identifier = Identifier.tryParse(effectId);
             if (identifier == null) return;
             
-            Optional<RegistryEntry.Reference<StatusEffect>> effectOpt = Registries.STATUS_EFFECT.getEntry(identifier);
-            if (effectOpt.isEmpty()) return;
-            
-            player.removeStatusEffect(effectOpt.get());
+            StatusEffect effect = Registries.STATUS_EFFECT.get(identifier);
+            if (effect == null) return;
+
+            player.removeStatusEffect(effect);
             
         } catch (Exception e) {
             // Silently fail
