@@ -41,6 +41,8 @@ A server-side Fabric mod for Minecraft 1.21.8.
 2. Run `./gradlew build` (Linux/Mac) or `gradlew.bat build` (Windows)
 3. The built mod will be in `build/libs/`
 
+## Please report any bugs in the bugtracker
+
 ## License
 
 MIT License
