@@ -13,7 +13,8 @@
     "PlayerManagerMixin",
     "ProjectileEntityMixin",
     "ServerCommonNetworkHandlerAccessor",
-    "ServerPlayerEntityMixin"
+    "ServerPlayerEntityMixin",
+    "VillagerEntityMixin"
   ],
   "client": [
   ],

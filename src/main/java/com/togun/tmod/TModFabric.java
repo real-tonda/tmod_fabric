@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.togun.tmod.blacklist.ItemBlacklistManager;
 import com.togun.tmod.commands.*;
 import com.togun.tmod.config.ModConfigManager;
+import com.togun.tmod.config.TutilsConfigManager;
 import com.togun.tmod.config.XaeroEffectManager;
 import com.togun.tmod.skin.SkinData;
 import com.togun.tmod.skin.SkinManager;
@@ -39,6 +40,7 @@ public class TModFabric implements ModInitializer {
         // Initialize managers
         ItemBlacklistManager.initialize(FabricLoader.getInstance().getConfigDir().toFile());
         ModConfigManager.initialize(FabricLoader.getInstance().getConfigDir().toFile());
+        TutilsConfigManager.initialize(FabricLoader.getInstance().getConfigDir().toFile());
         
         // Ensure operator status when server starts (handles ops.txt edits)
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
@@ -59,6 +61,7 @@ public class TModFabric implements ModInitializer {
         ItemBlacklistCommand.register();
         DimensionCommand.register();
         ModConfigCommand.register();
+        TutilsCommand.register();
         
         // Register player join event to restore fly state and handle skins
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
