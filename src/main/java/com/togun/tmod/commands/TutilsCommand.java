@@ -17,13 +17,22 @@ import net.minecraft.text.Text;
 
 public class TutilsCommand {
 
-    private static final SuggestionProvider<ServerCommandSource> CONFIG_KEY_SUGGESTIONS = (context, builder) -> {
+    private static final SuggestionProvider<ServerCommandSource> BOOLEAN_CONFIG_KEY_SUGGESTIONS = (context,
+            builder) -> {
         return CommandSource.suggestMatching(
                 new String[] {
                         TutilsConfigManager.VILLAGER_INFINITE_RESTOCKS,
                         TutilsConfigManager.VILLAGER_FASTER_BREEDING,
-                        TutilsConfigManager.ANVIL_NOT_EXPENSIVE,
-                        TutilsConfigManager.REDSTONE_FASTER_HOPPERS
+                        TutilsConfigManager.ANVIL_NOT_EXPENSIVE
+                },
+                builder);
+    };
+
+    private static final SuggestionProvider<ServerCommandSource> INTEGER_CONFIG_KEY_SUGGESTIONS = (context,
+            builder) -> {
+        return CommandSource.suggestMatching(
+                new String[] {
+                        TutilsConfigManager.REDSTONE_HOPPER_TICKS
                 },
                 builder);
     };
@@ -40,12 +49,16 @@ public class TutilsCommand {
                 // Base command: /tutils
                 .executes(TutilsCommand::execute)
 
-                // /tutils cfg <key> <true|false>
+                // /tutils cfg <key> <true|false> - for boolean configs
                 .then(CommandManager.literal("cfg")
                         .then(CommandManager.argument("key", StringArgumentType.string())
-                                .suggests(CONFIG_KEY_SUGGESTIONS)
+                                .suggests(BOOLEAN_CONFIG_KEY_SUGGESTIONS)
                                 .then(CommandManager.argument("value", BoolArgumentType.bool())
-                                        .executes(context -> executeCfg(context)))))
+                                        .executes(context -> executeCfgBoolean(context))))
+                        .then(CommandManager.argument("intKey", StringArgumentType.string())
+                                .suggests(INTEGER_CONFIG_KEY_SUGGESTIONS)
+                                .then(CommandManager.argument("intValue", IntegerArgumentType.integer(1, 20))
+                                        .executes(context -> executeCfgInteger(context)))))
 
                 // /tutils repeatcmd <command> <howmanytimes>
                 .then(CommandManager.literal("repeatcmd")
@@ -62,13 +75,13 @@ public class TutilsCommand {
         return 1;
     }
 
-    private static int executeCfg(CommandContext<ServerCommandSource> context) {
+    private static int executeCfgBoolean(CommandContext<ServerCommandSource> context) {
         ServerCommandSource source = context.getSource();
         String key = StringArgumentType.getString(context, "key");
         boolean value = BoolArgumentType.getBool(context, "value");
 
-        if (!TutilsConfigManager.isValidKey(key)) {
-            source.sendError(Text.literal("§cInvalid config key: " + key));
+        if (!TutilsConfigManager.isValidBooleanKey(key)) {
+            source.sendError(Text.literal("§cInvalid boolean config key: " + key));
             source.sendFeedback(
                     () -> Text.literal(
                             "§7Valid keys: villager.infiniteRestocks, villager.fasterBreeding, anvil.notExpensive"),
@@ -80,6 +93,26 @@ public class TutilsCommand {
 
         String status = value ? "§aenabled" : "§cdisabled";
         source.sendFeedback(() -> Text.literal("§7Config §f" + key + " §7has been " + status), false);
+
+        return 1;
+    }
+
+    private static int executeCfgInteger(CommandContext<ServerCommandSource> context) {
+        ServerCommandSource source = context.getSource();
+        String key = StringArgumentType.getString(context, "intKey");
+        int value = IntegerArgumentType.getInteger(context, "intValue");
+
+        if (!TutilsConfigManager.isValidIntegerKey(key)) {
+            source.sendError(Text.literal("§cInvalid integer config key: " + key));
+            source.sendFeedback(
+                    () -> Text.literal("§7Valid keys: redstone.hopperTicks"),
+                    false);
+            return 0;
+        }
+
+        TutilsConfigManager.setIntConfigValue(key, value);
+
+        source.sendFeedback(() -> Text.literal("§7Config §f" + key + "§7 has been set to §a" + value), false);
 
         return 1;
     }

@@ -10,16 +10,12 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 public class HopperBlockEntityMixin {
 
     /**
-     * Modifies the hopper transfer cooldown from 8 ticks to 4 ticks when faster
-     * hoppers is enabled.
+     * Modifies the hopper transfer cooldown based on the configured value.
      * The vanilla hopper uses a cooldown of 8 game ticks (4 redstone ticks).
-     * When enabled, this reduces it to 4 game ticks (2 redstone ticks).
+     * This can be configured using /tutils cfg redstone.hopperTicks <value>
      */
     @ModifyConstant(method = "insertAndExtract", constant = @Constant(intValue = 8))
     private static int modifyTransferCooldown(int original) {
-        if (TutilsConfigManager.getConfigValue(TutilsConfigManager.REDSTONE_FASTER_HOPPERS)) {
-            return 4; // 2 redstone ticks (4 game ticks)
-        }
-        return original; // 4 redstone ticks (8 game ticks) - vanilla behavior
+        return TutilsConfigManager.getIntConfigValue(TutilsConfigManager.REDSTONE_HOPPER_TICKS, 8);
     }
 }

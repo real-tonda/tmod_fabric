@@ -5,20 +5,17 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "BlockPlacementMixin",
-    "DeOpCommandMixin",
     "FreezeMixin",
     "GodModeMixin",
     "HopperBlockEntityMixin",
     "ItemUseMixin",
     "LivingEntityMixin",
-    "PlayerManagerMixin",
     "ProjectileEntityMixin",
     "ServerCommonNetworkHandlerAccessor",
     "ServerPlayerEntityMixin",
     "VillagerEntityMixin"
   ],
-  "client": [
-  ],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   }

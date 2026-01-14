@@ -16,38 +16,47 @@ import java.util.Map;
  * Manages configuration for tutils command settings
  */
 public class TutilsConfigManager {
-    private static final Map<String, Boolean> configValues = new HashMap<>();
+    private static final Map<String, Boolean> booleanConfigValues = new HashMap<>();
+    private static final Map<String, Integer> integerConfigValues = new HashMap<>();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static File configFile;
 
-    // Valid config keys
+    // Valid boolean config keys
     public static final String VILLAGER_INFINITE_RESTOCKS = "villager.infiniteRestocks";
     public static final String VILLAGER_FASTER_BREEDING = "villager.fasterBreeding";
     public static final String ANVIL_NOT_EXPENSIVE = "anvil.notExpensive";
-    public static final String REDSTONE_FASTER_HOPPERS = "redstone.fasterHoppers";
 
-    private static final String[] VALID_KEYS = {
+    private static final String[] VALID_BOOLEAN_KEYS = {
             VILLAGER_INFINITE_RESTOCKS,
             VILLAGER_FASTER_BREEDING,
-            ANVIL_NOT_EXPENSIVE,
-            REDSTONE_FASTER_HOPPERS
+            ANVIL_NOT_EXPENSIVE
+    };
+
+    // Valid integer config keys
+    public static final String REDSTONE_HOPPER_TICKS = "redstone.hopperTicks";
+
+    private static final String[] VALID_INTEGER_KEYS = {
+            REDSTONE_HOPPER_TICKS
     };
 
     public static void initialize(File configDir) {
         configFile = new File(configDir, "tutils_config.json");
         loadConfig();
 
-        // Set default states for all config values (false by default)
-        for (String key : VALID_KEYS) {
-            configValues.putIfAbsent(key, false);
+        // Set default states for all boolean config values (false by default)
+        for (String key : VALID_BOOLEAN_KEYS) {
+            booleanConfigValues.putIfAbsent(key, false);
         }
+
+        // Set default values for integer configs
+        integerConfigValues.putIfAbsent(REDSTONE_HOPPER_TICKS, 8); // Vanilla default
     }
 
     /**
-     * Checks if a config key is valid
+     * Checks if a boolean config key is valid
      */
-    public static boolean isValidKey(String key) {
-        for (String validKey : VALID_KEYS) {
+    public static boolean isValidBooleanKey(String key) {
+        for (String validKey : VALID_BOOLEAN_KEYS) {
             if (validKey.equals(key)) {
                 return true;
             }
@@ -56,27 +65,63 @@ public class TutilsConfigManager {
     }
 
     /**
-     * Gets a config value
+     * Checks if an integer config key is valid
      */
-    public static boolean getConfigValue(String key) {
-        return configValues.getOrDefault(key, false);
+    public static boolean isValidIntegerKey(String key) {
+        for (String validKey : VALID_INTEGER_KEYS) {
+            if (validKey.equals(key)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
-     * Sets a config value
+     * Gets a boolean config value
+     */
+    public static boolean getConfigValue(String key) {
+        return booleanConfigValues.getOrDefault(key, false);
+    }
+
+    /**
+     * Sets a boolean config value
      */
     public static void setConfigValue(String key, boolean value) {
-        if (isValidKey(key)) {
-            configValues.put(key, value);
+        if (isValidBooleanKey(key)) {
+            booleanConfigValues.put(key, value);
             saveConfig();
         }
     }
 
     /**
-     * Gets all config values
+     * Gets an integer config value
+     */
+    public static int getIntConfigValue(String key, int defaultValue) {
+        return integerConfigValues.getOrDefault(key, defaultValue);
+    }
+
+    /**
+     * Sets an integer config value
+     */
+    public static void setIntConfigValue(String key, int value) {
+        if (isValidIntegerKey(key)) {
+            integerConfigValues.put(key, value);
+            saveConfig();
+        }
+    }
+
+    /**
+     * Gets all boolean config values
      */
     public static Map<String, Boolean> getAllConfigValues() {
-        return new HashMap<>(configValues);
+        return new HashMap<>(booleanConfigValues);
+    }
+
+    /**
+     * Gets all integer config values
+     */
+    public static Map<String, Integer> getAllIntConfigValues() {
+        return new HashMap<>(integerConfigValues);
     }
 
     /**
@@ -90,15 +135,23 @@ public class TutilsConfigManager {
         }
 
         try (FileReader reader = new FileReader(configFile)) {
-            Type type = new TypeToken<Map<String, Boolean>>() {
+            Type type = new TypeToken<Map<String, Object>>() {
             }.getType();
-            Map<String, Boolean> loaded = GSON.fromJson(reader, type);
+            Map<String, Object> loaded = GSON.fromJson(reader, type);
 
             if (loaded != null) {
-                // Only load valid keys
-                for (Map.Entry<String, Boolean> entry : loaded.entrySet()) {
-                    if (isValidKey(entry.getKey())) {
-                        configValues.put(entry.getKey(), entry.getValue());
+                // Load valid boolean and integer keys
+                for (Map.Entry<String, Object> entry : loaded.entrySet()) {
+                    String key = entry.getKey();
+                    Object value = entry.getValue();
+
+                    if (isValidBooleanKey(key) && value instanceof Boolean) {
+                        booleanConfigValues.put(key, (Boolean) value);
+                    } else if (isValidIntegerKey(key)) {
+                        // Handle both Integer and Double (JSON number parsing)
+                        if (value instanceof Number) {
+                            integerConfigValues.put(key, ((Number) value).intValue());
+                        }
                     }
                 }
                 TModFabric.LOGGER.info("Loaded tutils configuration");
@@ -115,8 +168,13 @@ public class TutilsConfigManager {
         try {
             configFile.getParentFile().mkdirs();
 
+            // Merge both boolean and integer configs into one map
+            Map<String, Object> allConfigs = new HashMap<>();
+            allConfigs.putAll(booleanConfigValues);
+            allConfigs.putAll(integerConfigValues);
+
             try (FileWriter writer = new FileWriter(configFile)) {
-                GSON.toJson(configValues, writer);
+                GSON.toJson(allConfigs, writer);
             }
             TModFabric.LOGGER.info("Saved tutils configuration");
         } catch (Exception e) {
