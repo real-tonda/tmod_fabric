@@ -8,6 +8,7 @@
     "DeOpCommandMixin",
     "FreezeMixin",
     "GodModeMixin",
+    "HopperBlockEntityMixin",
     "ItemUseMixin",
     "LivingEntityMixin",
     "PlayerManagerMixin",

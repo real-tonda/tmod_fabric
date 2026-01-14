@@ -19,28 +19,30 @@ public class TutilsConfigManager {
     private static final Map<String, Boolean> configValues = new HashMap<>();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static File configFile;
-    
+
     // Valid config keys
     public static final String VILLAGER_INFINITE_RESTOCKS = "villager.infiniteRestocks";
     public static final String VILLAGER_FASTER_BREEDING = "villager.fasterBreeding";
     public static final String ANVIL_NOT_EXPENSIVE = "anvil.notExpensive";
-    
+    public static final String REDSTONE_FASTER_HOPPERS = "redstone.fasterHoppers";
+
     private static final String[] VALID_KEYS = {
-        VILLAGER_INFINITE_RESTOCKS,
-        VILLAGER_FASTER_BREEDING,
-        ANVIL_NOT_EXPENSIVE
+            VILLAGER_INFINITE_RESTOCKS,
+            VILLAGER_FASTER_BREEDING,
+            ANVIL_NOT_EXPENSIVE,
+            REDSTONE_FASTER_HOPPERS
     };
-    
+
     public static void initialize(File configDir) {
         configFile = new File(configDir, "tutils_config.json");
         loadConfig();
-        
+
         // Set default states for all config values (false by default)
         for (String key : VALID_KEYS) {
             configValues.putIfAbsent(key, false);
         }
     }
-    
+
     /**
      * Checks if a config key is valid
      */
@@ -52,14 +54,14 @@ public class TutilsConfigManager {
         }
         return false;
     }
-    
+
     /**
      * Gets a config value
      */
     public static boolean getConfigValue(String key) {
         return configValues.getOrDefault(key, false);
     }
-    
+
     /**
      * Sets a config value
      */
@@ -69,14 +71,14 @@ public class TutilsConfigManager {
             saveConfig();
         }
     }
-    
+
     /**
      * Gets all config values
      */
     public static Map<String, Boolean> getAllConfigValues() {
         return new HashMap<>(configValues);
     }
-    
+
     /**
      * Loads configuration from file
      */
@@ -86,11 +88,12 @@ public class TutilsConfigManager {
             saveConfig();
             return;
         }
-        
+
         try (FileReader reader = new FileReader(configFile)) {
-            Type type = new TypeToken<Map<String, Boolean>>(){}.getType();
+            Type type = new TypeToken<Map<String, Boolean>>() {
+            }.getType();
             Map<String, Boolean> loaded = GSON.fromJson(reader, type);
-            
+
             if (loaded != null) {
                 // Only load valid keys
                 for (Map.Entry<String, Boolean> entry : loaded.entrySet()) {
@@ -104,14 +107,14 @@ public class TutilsConfigManager {
             TModFabric.LOGGER.error("Failed to load tutils config", e);
         }
     }
-    
+
     /**
      * Saves configuration to file
      */
     private static void saveConfig() {
         try {
             configFile.getParentFile().mkdirs();
-            
+
             try (FileWriter writer = new FileWriter(configFile)) {
                 GSON.toJson(configValues, writer);
             }
@@ -121,4 +124,3 @@ public class TutilsConfigManager {
         }
     }
 }
-
