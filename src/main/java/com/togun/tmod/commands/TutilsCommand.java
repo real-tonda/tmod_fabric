@@ -15,26 +15,6 @@ import net.minecraft.text.Text;
 
 public class TutilsCommand {
 
-    private static final SuggestionProvider<ServerCommandSource> BOOLEAN_CONFIG_KEY_SUGGESTIONS = (context,
-            builder) -> {
-        return CommandSource.suggestMatching(
-                new String[] {
-                        TutilsConfigManager.VILLAGER_INFINITE_RESTOCKS,
-                        TutilsConfigManager.VILLAGER_FASTER_BREEDING,
-                        TutilsConfigManager.ANVIL_NOT_EXPENSIVE
-                },
-                builder);
-    };
-
-    private static final SuggestionProvider<ServerCommandSource> INTEGER_CONFIG_KEY_SUGGESTIONS = (context,
-            builder) -> {
-        return CommandSource.suggestMatching(
-                new String[] {
-                        TutilsConfigManager.REDSTONE_HOPPER_TICKS
-                },
-                builder);
-    };
-
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             registerTutils(dispatcher, registryAccess);
