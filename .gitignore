@@ -43,3 +43,5 @@ run/
 # Logs
 logs/
 *.log
+
+.docs/
