@@ -1,5 +1,6 @@
 package com.togun.tmod.mixin;
 
+import com.togun.tmod.mixin.EntityAccessor;
 import com.togun.tmod.blacklist.ItemBlacklistManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.ProjectileEntity;
@@ -19,22 +20,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(ProjectileEntity.class)
 public class ProjectileEntityMixin {
-    
+
     /**
      * Cancels projectile spawning if the item is blacklisted
      */
     @Inject(method = "<init>(Lnet/minecraft/entity/EntityType;Lnet/minecraft/world/World;)V", at = @At("RETURN"))
     private void onProjectileCreate(CallbackInfo ci) {
         ProjectileEntity projectile = (ProjectileEntity) (Object) this;
-        World world = projectile.getWorld();
-        
+
         // Only check on server side
-        if (!world.isClient) {
+        if (!((EntityAccessor) projectile).getLevelField().isClient()) {
             Entity owner = projectile.getOwner();
             if (owner instanceof ServerPlayerEntity player) {
                 // Check what item would create this projectile
                 ItemStack item = getProjectileItem(projectile);
-                
+
                 if (item != null && ItemBlacklistManager.isBlacklisted(item)) {
                     player.sendMessage(Text.literal("§cThis item is blacklisted and cannot be thrown!"), true);
                     // Remove the projectile immediately
@@ -43,7 +43,7 @@ public class ProjectileEntityMixin {
             }
         }
     }
-    
+
     /**
      * Determines which item stack corresponds to a projectile type
      */
@@ -55,4 +55,3 @@ public class ProjectileEntityMixin {
         return null;
     }
 }
-

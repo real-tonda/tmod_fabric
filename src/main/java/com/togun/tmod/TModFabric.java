@@ -1,6 +1,7 @@
 package com.togun.tmod;
 
 import com.mojang.authlib.properties.Property;
+import com.togun.tmod.mixin.GameProfileAccessor;
 import com.togun.tmod.blacklist.ItemBlacklistManager;
 import com.togun.tmod.commands.*;
 import com.togun.tmod.config.ModConfigManager;
@@ -61,8 +62,8 @@ public class TModFabric implements ModInitializer {
             SkinData cachedSkin = SkinManager.getCachedSkin(player.getUuid());
             if (cachedSkin != null) {
                 // Apply cached skin to the player's GameProfile
-                player.getGameProfile().getProperties().removeAll("textures");
-                player.getGameProfile().getProperties().put(
+                ((GameProfileAccessor) (Object) player.getGameProfile()).getProperties().removeAll("textures");
+                ((GameProfileAccessor) (Object) player.getGameProfile()).getProperties().put(
                         "textures",
                         new Property("textures", cachedSkin.getValue(), cachedSkin.getSignature()));
                 LOGGER.info(

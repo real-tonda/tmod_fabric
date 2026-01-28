@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 
 import java.util.*;
 
@@ -108,7 +109,7 @@ public class THelpCommand {
      * Gets the permission level of the command source
      */
     private static int getPermissionLevel(ServerCommandSource source) {
-        if (source.hasPermissionLevel(4))
+        if (Permissions.check(source, "tmod.admin", 4))
             return 4;
         return 0;
     }
