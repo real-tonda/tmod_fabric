@@ -10,7 +10,6 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 
 public class SkinCommand {
 
@@ -37,7 +36,8 @@ public class SkinCommand {
                                     .executes(SkinCommand::setSkinSelf)
                                     .then(CommandManager.argument("target", StringArgumentType.string())
                                             .suggests(PLAYER_SUGGESTIONS)
-                                            .requires(source -> Permissions.check(source, "tmod.command.skin.other", 4))
+                                            .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions
+                                                    .check(source, "tmod.command.skin.other", 4))
                                             .executes(SkinCommand::setSkinOther))))
 
                     // /skin clear - Clear your custom skin
@@ -45,7 +45,8 @@ public class SkinCommand {
                             .executes(SkinCommand::clearSkinSelf)
                             .then(CommandManager.argument("target", StringArgumentType.string())
                                     .suggests(PLAYER_SUGGESTIONS)
-                                    .requires(source -> Permissions.check(source, "tmod.command.skin.other", 4))
+                                    .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source,
+                                            "tmod.command.skin.other", 4))
                                     .executes(SkinCommand::clearSkinOther)))
 
                     // /skin update - Refresh your skin
@@ -53,7 +54,8 @@ public class SkinCommand {
                             .executes(SkinCommand::updateSkinSelf)
                             .then(CommandManager.argument("target", StringArgumentType.string())
                                     .suggests(PLAYER_SUGGESTIONS)
-                                    .requires(source -> Permissions.check(source, "tmod.command.skin.other", 4))
+                                    .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source,
+                                            "tmod.command.skin.other", 4))
                                     .executes(SkinCommand::updateSkinOther))));
         });
     }

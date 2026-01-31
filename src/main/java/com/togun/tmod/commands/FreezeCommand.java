@@ -9,7 +9,6 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,7 +34,8 @@ public class FreezeCommand {
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal("freeze")
-                    .requires(source -> Permissions.check(source, "tmod.command.freeze", 4))
+                    .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source,
+                            "tmod.command.freeze", 4))
                     .then(CommandManager.argument("player", StringArgumentType.string())
                             .suggests(PLAYER_SUGGESTIONS)
                             .executes(FreezeCommand::execute)));

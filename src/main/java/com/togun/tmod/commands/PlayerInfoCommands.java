@@ -3,20 +3,16 @@ package com.togun.tmod.commands;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.togun.tmod.mixin.EntityAccessor;
-
-import com.togun.tmod.mixin.ServerCommonNetworkHandlerAccessor;
+import com.togun.tmod.TModFabric;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import me.lucko.fabric.api.permissions.v0.Permissions;
-import com.togun.tmod.mixin.MinecraftServerAccessor;
-import com.togun.tmod.mixin.GameProfileAccessor;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.UserCache;
 
+import java.lang.reflect.Field;
 import java.util.Optional;
 
 public class PlayerInfoCommands {
@@ -25,13 +21,15 @@ public class PlayerInfoCommands {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             // /seen command - available to all players
             dispatcher.register(CommandManager.literal("seen")
-                    .requires(source -> Permissions.check(source, "tmod.command.seen", 0))
+                    .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source,
+                            "tmod.command.seen", 0))
                     .then(CommandManager.argument("player", StringArgumentType.string())
                             .executes(PlayerInfoCommands::executeSeen)));
 
             // /whois command - requires operator
             dispatcher.register(CommandManager.literal("whois")
-                    .requires(source -> Permissions.check(source, "tmod.command.whois", 4))
+                    .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source,
+                            "tmod.command.whois", 4))
                     .then(CommandManager.argument("player", StringArgumentType.string())
                             .executes(PlayerInfoCommands::executeWhois)));
         });
@@ -50,7 +48,11 @@ public class PlayerInfoCommands {
         }
 
         // Try to get player from user cache
-        UserCache userCache = ((MinecraftServerAccessor) source.getServer()).getUserCache();
+        UserCache userCache = getUserCache(source.getServer());
+        if (userCache == null) {
+            source.sendError(Text.literal("Error: Could not access Server UserCache."));
+            return 0;
+        }
         Optional<?> entryOpt = userCache.findByName(playerName);
 
         if (entryOpt.isEmpty()) {
@@ -58,13 +60,12 @@ public class PlayerInfoCommands {
             return 0;
         }
 
-        GameProfile profile;
+        GameProfile profile = null;
         Object entry = entryOpt.get();
         if (entry instanceof GameProfile) {
             profile = (GameProfile) entry;
-        } else {
-            // Assume it's an entry wrapper (PlayerConfigEntry) with a getProfile or profile
-            // method
+        } else if (entry != null) {
+            // Extract profile from PlayerConfigEntry using reflection
             try {
                 profile = (GameProfile) entry.getClass().getMethod("profile").invoke(entry);
             } catch (Exception e1) {
@@ -77,11 +78,16 @@ public class PlayerInfoCommands {
             }
         }
 
+        if (profile == null) {
+            source.sendError(Text.literal("Error: GameProfile entry is empty for " + playerName));
+            return 0;
+        }
+
         final GameProfile finalProfile = profile;
 
         source.sendFeedback(() -> Text.literal(
-                "§7Player §f" + ((GameProfileAccessor) (Object) finalProfile).getName() + " §7is §coffline§7.\n" +
-                        "§7UUID: §f" + ((GameProfileAccessor) (Object) finalProfile).getId() + "\n" +
+                "§7Player §f" + finalProfile.name() + " §7is §coffline§7.\n" +
+                        "§7UUID: §f" + finalProfile.id() + "\n" +
                         "§7Last seen data is not tracked (requires additional implementation)."),
                 false);
 
@@ -103,10 +109,10 @@ public class PlayerInfoCommands {
         String name = player.getName().getString();
         String uuid = player.getUuidAsString();
         String gamemode = player.interactionManager.getGameMode().name();
-        String world = ((EntityAccessor) player).getLevelField().getRegistryKey().getValue().toString();
-        int ping = ((ServerCommonNetworkHandlerAccessor) player.networkHandler).getLatency();
+        String world = player.getEntityWorld().getRegistryKey().getValue().toString();
+        int ping = player.networkHandler.getLatency();
         String ip = player.getIp();
-        boolean isOp = Permissions.check(player, "tmod.admin", 4);
+        boolean isOp = me.lucko.fabric.api.permissions.v0.Permissions.check(player, "tmod.admin", 4);
 
         // Get position
         int x = (int) player.getX();
@@ -134,5 +140,23 @@ public class PlayerInfoCommands {
                 false);
 
         return 1;
+    }
+
+    /**
+     * Helper to get UserCache via reflection to avoid remapping issues across
+     * versions.
+     */
+    private static UserCache getUserCache(MinecraftServer server) {
+        try {
+            for (Field field : MinecraftServer.class.getDeclaredFields()) {
+                if (field.getType() == UserCache.class) {
+                    field.setAccessible(true);
+                    return (UserCache) field.get(server);
+                }
+            }
+        } catch (Exception e) {
+            TModFabric.LOGGER.error("Failed to retrieve UserCache via reflection", e);
+        }
+        return null;
     }
 }

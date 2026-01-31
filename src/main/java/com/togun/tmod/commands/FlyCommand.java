@@ -5,7 +5,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -41,8 +40,9 @@ public class FlyCommand {
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal("fly")
-                    .requires(source -> Permissions.check(source, "tmod.command.fly", 4)) // Requires operator status
-                                                                                          // (level 4)
+                    .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source, "tmod.command.fly",
+                            4)) // Requires operator status
+                    // (level 4)
                     .executes(FlyCommand::executeSelf)
                     .then(CommandManager.argument("player", StringArgumentType.string())
                             .suggests(PLAYER_SUGGESTIONS)

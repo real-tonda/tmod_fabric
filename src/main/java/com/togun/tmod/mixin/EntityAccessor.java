@@ -7,6 +7,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(Entity.class)
 public interface EntityAccessor {
-    @Accessor("level") // "world" or "level" depending on mapping, Level is the new standard
+    @Accessor("world")
     World getLevelField();
 }

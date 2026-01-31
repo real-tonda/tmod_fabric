@@ -13,7 +13,6 @@ import net.minecraft.text.Text;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 
 public class GodCommand {
     private static final Set<UUID> godModePlayers = new HashSet<>();
@@ -35,7 +34,8 @@ public class GodCommand {
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal("god")
-                    .requires(source -> Permissions.check(source, "tmod.command.god", 4))
+                    .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source, "tmod.command.god",
+                            4))
                     .executes(GodCommand::executeSelf)
                     .then(CommandManager.argument("player", StringArgumentType.string())
                             .suggests(PLAYER_SUGGESTIONS)

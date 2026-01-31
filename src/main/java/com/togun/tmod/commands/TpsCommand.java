@@ -5,14 +5,14 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 
 public class TpsCommand {
 
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal("tps")
-                    .requires(source -> Permissions.check(source, "tmod.command.tps", 0)) // Anyone can use
+                    .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source, "tmod.command.tps",
+                            0)) // Anyone can use
                     .executes(TpsCommand::execute));
         });
     }

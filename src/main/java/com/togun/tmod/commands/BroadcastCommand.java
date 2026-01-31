@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -23,13 +22,15 @@ public class BroadcastCommand {
             CommandRegistryAccess registryAccess) {
         // Main command: /broadcast
         dispatcher.register(CommandManager.literal("broadcast")
-                .requires(source -> Permissions.check(source, "tmod.command.broadcast", 4))
+                .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source,
+                        "tmod.command.broadcast", 4))
                 .then(CommandManager.argument("message", StringArgumentType.greedyString())
                         .executes(context -> executeBroadcast(context))));
 
         // Alias: /bc
         dispatcher.register(CommandManager.literal("bc")
-                .requires(source -> Permissions.check(source, "tmod.command.broadcast", 4))
+                .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source,
+                        "tmod.command.broadcast", 4))
                 .then(CommandManager.argument("message", StringArgumentType.greedyString())
                         .executes(context -> executeBroadcast(context))));
     }

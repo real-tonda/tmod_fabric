@@ -12,7 +12,6 @@ import net.minecraft.text.Text;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameMode;
 import net.minecraft.server.MinecraftServer;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 
 public class GamemodeCommands {
     private static final SuggestionProvider<ServerCommandSource> PLAYER_SUGGESTIONS = (context, builder) -> {
@@ -33,7 +32,8 @@ public class GamemodeCommands {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             // /gmc - Creative mode
             dispatcher.register(CommandManager.literal("gmc")
-                    .requires(source -> Permissions.check(source, "tmod.command.gamemode", 2))
+                    .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source,
+                            "tmod.command.gamemode", 2))
                     .executes(GamemodeCommands::setCreativeSelf)
                     .then(CommandManager.argument("player", StringArgumentType.string())
                             .suggests(PLAYER_SUGGESTIONS)
@@ -41,7 +41,8 @@ public class GamemodeCommands {
 
             // /gms - Survival mode
             dispatcher.register(CommandManager.literal("gms")
-                    .requires(source -> Permissions.check(source, "tmod.command.gamemode", 2))
+                    .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source,
+                            "tmod.command.gamemode", 2))
                     .executes(GamemodeCommands::setSurvivalSelf)
                     .then(CommandManager.argument("player", StringArgumentType.string())
                             .suggests(PLAYER_SUGGESTIONS)
@@ -49,7 +50,8 @@ public class GamemodeCommands {
 
             // /gma - Adventure mode
             dispatcher.register(CommandManager.literal("gma")
-                    .requires(source -> Permissions.check(source, "tmod.command.gamemode", 2))
+                    .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source,
+                            "tmod.command.gamemode", 2))
                     .executes(GamemodeCommands::setAdventureSelf)
                     .then(CommandManager.argument("player", StringArgumentType.string())
                             .suggests(PLAYER_SUGGESTIONS)
@@ -57,7 +59,8 @@ public class GamemodeCommands {
 
             // /gmsp - Spectator mode
             dispatcher.register(CommandManager.literal("gmsp")
-                    .requires(source -> Permissions.check(source, "tmod.command.gamemode", 2))
+                    .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source,
+                            "tmod.command.gamemode", 2))
                     .executes(GamemodeCommands::setSpectatorSelf)
                     .then(CommandManager.argument("player", StringArgumentType.string())
                             .suggests(PLAYER_SUGGESTIONS)

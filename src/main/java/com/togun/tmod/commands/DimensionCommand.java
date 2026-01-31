@@ -6,7 +6,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.registry.RegistryKey;
@@ -44,17 +43,19 @@ public class DimensionCommand {
             CommandRegistryAccess registryAccess) {
         // /dims - List all dimensions
         dispatcher.register(CommandManager.literal("dims")
-                .requires(source -> Permissions.check(source, "tmod.command.dims", 4))
+                .requires(
+                        source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source, "tmod.command.dims", 4))
                 .executes(context -> executeListDimensions(context)));
 
         // Alias: /dimensions
         dispatcher.register(CommandManager.literal("dimensions")
-                .requires(source -> Permissions.check(source, "tmod.command.dimensions", 4))
+                .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source,
+                        "tmod.command.dimensions", 4))
                 .executes(context -> executeListDimensions(context)));
 
         // /dim <dimension> - Teleport to dimension
         dispatcher.register(CommandManager.literal("dim")
-                .requires(source -> Permissions.check(source, "tmod.command.dim", 4))
+                .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source, "tmod.command.dim", 4))
                 .then(CommandManager.argument("dimension", StringArgumentType.string())
                         .suggests(DIMENSION_SUGGESTIONS)
                         .executes(context -> executeTeleportToDimension(context))));
