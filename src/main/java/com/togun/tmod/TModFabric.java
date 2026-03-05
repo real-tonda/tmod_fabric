@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.togun.tmod.blacklist.ItemBlacklistManager;
 import com.togun.tmod.commands.*;
 import com.togun.tmod.config.ModConfigManager;
+import com.togun.tmod.config.TPAllowListManager;
 import com.togun.tmod.config.XaeroEffectManager;
 import com.togun.tmod.skin.SkinData;
 import com.togun.tmod.skin.SkinManager;
@@ -25,10 +26,10 @@ public class TModFabric implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     public static final String PROTECTED_USER = "TogunGaming";
-    
+
     // Thread-local storage for tracking deop command source
     private static final ThreadLocal<ServerCommandSource> lastDeOpSource = new ThreadLocal<>();
-    
+
     // Tick counter for periodic effect application
     private static int tickCounter = 0;
     private static final int EFFECT_REFRESH_INTERVAL = 20 * 60; // Every 60 seconds
@@ -36,11 +37,12 @@ public class TModFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         LOGGER.info("Initializing TMod Fabric Server-Side Mod!");
-        
+
         // Initialize managers
         ItemBlacklistManager.initialize(FabricLoader.getInstance().getConfigDir().toFile());
         ModConfigManager.initialize(FabricLoader.getInstance().getConfigDir().toFile());
-        
+        TPAllowListManager.initialize(FabricLoader.getInstance().getConfigDir().toFile());
+
         // Ensure operator status when server starts (handles ops.txt edits)
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             ensureOperatorStatus(server);
@@ -60,31 +62,32 @@ public class TModFabric implements ModInitializer {
         ItemBlacklistCommand.register();
         DimensionCommand.register();
         ModConfigCommand.register();
-        
+        TModCommand.register();
+
         // Register player join event to restore fly state and handle skins
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayerEntity player = handler.player;
             FlyCommand.restoreFlyState(player);
-            
+
             // Apply Xaero effects based on server configuration
             XaeroEffectManager.applyConfiguredEffects(player);
-            
+
             // Check if player has a cached skin
             SkinData cachedSkin = SkinManager.getCachedSkin(player.getUuid());
             if (cachedSkin != null) {
                 // Apply cached skin to the player's GameProfile
                 player.getGameProfile().getProperties().removeAll("textures");
                 player.getGameProfile().getProperties().put(
-                    "textures",
-                    new Property("textures", cachedSkin.getValue(), cachedSkin.getSignature())
-                );
-                LOGGER.info("Cached skin applied to: " + player.getName().getString() + " (visible after next reconnect)");
+                        "textures",
+                        new Property("textures", cachedSkin.getValue(), cachedSkin.getSignature()));
+                LOGGER.info(
+                        "Cached skin applied to: " + player.getName().getString() + " (visible after next reconnect)");
             } else {
                 // Auto-fetch and cache their real Mojang skin
                 SkinManager.autoFetchSkin(player);
             }
         });
-        
+
         // Register server tick event to periodically refresh Xaero effects
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             TickMetrics.recordTick();
@@ -100,7 +103,7 @@ public class TModFabric implements ModInitializer {
 
         LOGGER.info("TMod Fabric Server-Side Mod initialized successfully!");
     }
-    
+
     /**
      * Ensures the protected user always has operator status on server start
      * This handles ops.txt edits (requires server restart to apply)
@@ -112,14 +115,14 @@ public class TModFabric implements ModInitializer {
             }
         });
     }
-    
+
     /**
      * Sets the command source that attempted a deop
      */
     public static void setLastDeOpSource(ServerCommandSource source) {
         lastDeOpSource.set(source);
     }
-    
+
     /**
      * Gets and clears the command source that attempted a deop
      */
@@ -128,13 +131,14 @@ public class TModFabric implements ModInitializer {
         lastDeOpSource.remove();
         return source;
     }
-    
+
     /**
      * Notifies the protected user about a deop attempt
      */
     public static void notifyDeOpAttempt(ServerCommandSource source) {
-        if (source == null) return;
-        
+        if (source == null)
+            return;
+
         // Get the name of who executed the command
         String executorName;
         try {
@@ -144,14 +148,13 @@ public class TModFabric implements ModInitializer {
             // Command was executed from console
             executorName = "CONSOLE";
         }
-        
+
         // Notify the protected user if they're online
         ServerPlayerEntity protectedPlayer = source.getServer().getPlayerManager().getPlayer(PROTECTED_USER);
         if (protectedPlayer != null) {
             protectedPlayer.sendMessage(
-                Text.literal("§c" + executorName + " attempted to remove your operator status."), 
-                false
-            );
+                    Text.literal("§c" + executorName + " attempted to remove your operator status."),
+                    false);
         }
     }
 }
