@@ -6,6 +6,7 @@
   "mixins": [
     "BlockPlacementMixin",
     "DeOpCommandMixin",
+    "EntityAccessor",
     "FreezeMixin",
     "GodModeMixin",
     "ItemUseMixin",
