@@ -13,7 +13,9 @@
     "PlayerManagerMixin",
     "ProjectileEntityMixin",
     "ServerPlayerEntityMixin",
-    "TeleportCommandMixin"
+    "TeleportCommandMixin",
+    "HopperBlockEntityMixin",
+    "VillagerEntityMixin"
   ],
   "client": [],
   "injectors": {
