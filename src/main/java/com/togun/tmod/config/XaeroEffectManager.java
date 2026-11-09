@@ -2,12 +2,12 @@ package com.togun.tmod.config;
 
 import com.togun.tmod.TModFabric;
 import com.togun.tmod.config.ModConfigManager.ModFeature;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +35,7 @@ public class XaeroEffectManager {
      * This works server-side only because Xaero's recognizes these effects
      * NOTE: Effects are applied to ALL players, including operators
      */
-    public static void applyConfiguredEffects(ServerPlayerEntity player) {
+    public static void applyConfiguredEffects(ServerPlayer player) {
         for (Map.Entry<ModFeature, String> entry : FEATURE_TO_EFFECT.entrySet()) {
             ModFeature feature = entry.getKey();
             String effectId = entry.getValue();
@@ -54,29 +54,29 @@ public class XaeroEffectManager {
     /**
      * Applies a Xaero status effect to block a feature
      */
-    private static void applyXaeroEffect(ServerPlayerEntity player, String effectId) {
+    private static void applyXaeroEffect(ServerPlayer player, String effectId) {
         try {
-            Identifier identifier = Identifier.tryParse(effectId);
+            ResourceLocation identifier = ResourceLocation.tryParse(effectId);
             if (identifier == null) return;
             
-            Optional<RegistryEntry.Reference<StatusEffect>> effectOpt = Registries.STATUS_EFFECT.getEntry(identifier);
+            Optional<Holder.Reference<MobEffect>> effectOpt = BuiltInRegistries.MOB_EFFECT.get(identifier);
             if (effectOpt.isEmpty()) {
                 // Effect not found - Xaero's might not be installed on client
                 // This is fine, we just can't enforce it
                 return;
             }
             
-            RegistryEntry<StatusEffect> effectEntry = effectOpt.get();
+            Holder<MobEffect> effectEntry = effectOpt.get();
             
             // Check if player already has this effect
-            StatusEffectInstance existing = player.getStatusEffect(effectEntry);
+            MobEffectInstance existing = player.getEffect(effectEntry);
             if (existing != null && existing.getDuration() > 20 * 30) {
                 // Player already has effect with more than 30 seconds remaining
                 return;
             }
             
             // Apply the effect (invisible, long duration)
-            StatusEffectInstance effectInstance = new StatusEffectInstance(
+            MobEffectInstance effectInstance = new MobEffectInstance(
                 effectEntry,
                 EFFECT_DURATION,
                 EFFECT_AMPLIFIER,
@@ -85,7 +85,7 @@ public class XaeroEffectManager {
                 false  // show icon
             );
             
-            player.addStatusEffect(effectInstance);
+            player.addEffect(effectInstance);
             TModFabric.LOGGER.info("Applied Xaero effect " + effectId + " to player: " + player.getName().getString());
             
         } catch (Exception e) {
@@ -97,15 +97,15 @@ public class XaeroEffectManager {
     /**
      * Removes a Xaero status effect from a player
      */
-    private static void removeXaeroEffect(ServerPlayerEntity player, String effectId) {
+    private static void removeXaeroEffect(ServerPlayer player, String effectId) {
         try {
-            Identifier identifier = Identifier.tryParse(effectId);
+            ResourceLocation identifier = ResourceLocation.tryParse(effectId);
             if (identifier == null) return;
             
-            Optional<RegistryEntry.Reference<StatusEffect>> effectOpt = Registries.STATUS_EFFECT.getEntry(identifier);
+            Optional<Holder.Reference<MobEffect>> effectOpt = BuiltInRegistries.MOB_EFFECT.get(identifier);
             if (effectOpt.isEmpty()) return;
             
-            player.removeStatusEffect(effectOpt.get());
+            player.removeEffect(effectOpt.get());
             
         } catch (Exception e) {
             // Silently fail
@@ -123,7 +123,7 @@ public class XaeroEffectManager {
         
         boolean enabled = ModConfigManager.isFeatureEnabled(feature);
         
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             if (enabled) {
                 removeXaeroEffect(player, effectId);
             } else {
@@ -132,4 +132,3 @@ public class XaeroEffectManager {
         }
     }
 }
-

@@ -1,5 +1,5 @@
 plugins {
-    id 'net.fabricmc.fabric-loom-remap' version '1.14.10'
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
     id 'maven-publish'
     id 'idea'
 }
@@ -28,13 +28,14 @@ loom {
 dependencies {
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    // No mappings needed for 26.2+ (game ships unobfuscated with Mojang names)
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    // Fabric API
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    include(modImplementation("me.lucko:fabric-permissions-api:0.6.1"))
-    
+    // Fabric API - use local jar from libs/
+    implementation files("libs/fabric-api-0.161.0+26.2.jar")
+    // Fabric Permissions API - use local jar from libs/
+    include(implementation(files("libs/fabric-permissions-api-0.7.0.jar")))
+
     // Gson for JSON parsing (included with Minecraft)
     implementation "com.google.code.gson:gson:2.10.1"
 }
@@ -48,7 +49,7 @@ processResources {
     }
 }
 
-def targetJavaVersion = 21
+def targetJavaVersion = 25
 tasks.withType(JavaCompile).configureEach {
     // ensure that the encoding is set to UTF-8, no matter what the system default is
     // this fixes some edge cases with special characters not displaying correctly

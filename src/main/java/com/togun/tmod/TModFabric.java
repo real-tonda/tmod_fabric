@@ -13,7 +13,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,14 +52,14 @@ public class TModFabric implements ModInitializer {
 
         // Register player join event to restore fly state and handle skins
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            ServerPlayerEntity player = handler.player;
+            ServerPlayer player = handler.player;
             FlyCommand.restoreFlyState(player);
 
             // Apply Xaero effects based on server configuration
             XaeroEffectManager.applyConfiguredEffects(player);
 
             // Check if player has a cached skin
-            SkinData cachedSkin = SkinManager.getCachedSkin(player.getUuid());
+            SkinData cachedSkin = SkinManager.getCachedSkin(player.getUUID());
             if (cachedSkin != null) {
                 // Apply cached skin to the player's GameProfile safely
                 SkinManager.applySkin(player, cachedSkin);
@@ -77,7 +77,7 @@ public class TModFabric implements ModInitializer {
             if (tickCounter >= EFFECT_REFRESH_INTERVAL) {
                 tickCounter = 0;
                 // Refresh effects for all online players
-                for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                     XaeroEffectManager.applyConfiguredEffects(player);
                 }
             }

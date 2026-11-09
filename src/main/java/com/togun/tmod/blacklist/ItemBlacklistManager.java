@@ -4,10 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.togun.tmod.TModFabric;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 
 import java.io.File;
 import java.io.FileReader;
@@ -31,8 +31,8 @@ public class ItemBlacklistManager {
      */
     public static boolean addItem(String itemId) {
         // Validate that the item exists
-        Identifier identifier = Identifier.tryParse(itemId);
-        if (identifier == null || !Registries.ITEM.containsId(identifier)) {
+        ResourceLocation identifier = ResourceLocation.tryParse(itemId);
+        if (identifier == null || !BuiltInRegistries.ITEM.containsKey(identifier)) {
             return false;
         }
         
@@ -58,7 +58,7 @@ public class ItemBlacklistManager {
      * Checks if an item is blacklisted
      */
     public static boolean isBlacklisted(Item item) {
-        Identifier id = Registries.ITEM.getId(item);
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
         return blacklistedItems.contains(id.toString());
     }
     
@@ -121,4 +121,3 @@ public class ItemBlacklistManager {
         }
     }
 }
-

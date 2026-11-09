@@ -5,9 +5,9 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 
 import java.util.*;
 
@@ -47,13 +47,13 @@ public class THelpCommand {
 
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(CommandManager.literal("thelp")
+            dispatcher.register(Commands.literal("thelp")
                     .executes(THelpCommand::execute));
         });
     }
 
-    private static int execute(CommandContext<ServerCommandSource> context) {
-        ServerCommandSource source = context.getSource();
+    private static int execute(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
 
         // Get the player's permission level
         int permLevel = getPermissionLevel(source);
@@ -62,10 +62,10 @@ public class THelpCommand {
         helpMessage.append("§7§m                    §r §6§lTMod Commands §7§m                    §r\n");
 
         // Get actually registered commands from dispatcher
-        CommandDispatcher<ServerCommandSource> dispatcher = source.getServer().getCommandManager().getDispatcher();
+        CommandDispatcher<CommandSourceStack> dispatcher = source.getServer().getCommands().getDispatcher();
         Set<String> registeredCommands = new HashSet<>();
 
-        for (CommandNode<ServerCommandSource> node : dispatcher.getRoot().getChildren()) {
+        for (CommandNode<CommandSourceStack> node : dispatcher.getRoot().getChildren()) {
             if (node instanceof LiteralCommandNode) {
                 registeredCommands.add(node.getName());
             }
@@ -100,14 +100,14 @@ public class THelpCommand {
         helpMessage.append("§7§m                                                    §r\n");
         helpMessage.append("§7Total commands available: §e").append(commandCount);
 
-        source.sendFeedback(() -> Text.literal(helpMessage.toString()), false);
+        source.sendSuccess(() -> Component.literal(helpMessage.toString()), false);
         return 1;
     }
 
     /**
      * Gets the permission level of the command source
      */
-    private static int getPermissionLevel(ServerCommandSource source) {
+    private static int getPermissionLevel(CommandSourceStack source) {
         if (me.lucko.fabric.api.permissions.v0.Permissions.check(source, "tmod.admin", 4))
             return 4;
         return 0;

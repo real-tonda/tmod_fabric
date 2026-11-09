@@ -9,7 +9,7 @@ import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 import com.togun.tmod.TModFabric;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -104,7 +104,7 @@ public class SkinManager {
     /**
      * Sets a player's skin by fetching it from another player's username
      */
-    public static CompletableFuture<Boolean> setSkin(ServerPlayerEntity player, String targetPlayerName) {
+    public static CompletableFuture<Boolean> setSkin(ServerPlayer player, String targetPlayerName) {
         return fetchUUID(targetPlayerName)
                 .thenCompose(uuidOpt -> {
                     if (uuidOpt.isEmpty()) {
@@ -120,7 +120,7 @@ public class SkinManager {
                     SkinData skinData = skinDataOpt.get();
 
                     // Cache the skin
-                    skinCache.put(player.getUuid(), skinData);
+                    skinCache.put(player.getUUID(), skinData);
 
                     // Apply the skin
                     applySkin(player, skinData);
@@ -132,7 +132,7 @@ public class SkinManager {
      * Applies skin data to a player's GameProfile
      * The skin will be visible after the player reconnects
      */
-    public static void applySkin(ServerPlayerEntity player, SkinData skinData) {
+    public static void applySkin(ServerPlayer player, SkinData skinData) {
         GameProfile profile = player.getGameProfile();
 
         // Remove old skin properties safely
@@ -199,8 +199,8 @@ public class SkinManager {
     /**
      * Clears a player's custom skin and restores their original
      */
-    public static void clearSkin(ServerPlayerEntity player) {
-        skinCache.remove(player.getUuid());
+    public static void clearSkin(ServerPlayer player) {
+        skinCache.remove(player.getUUID());
 
         // Remove the custom skin property safely
         GameProfile profile = player.getGameProfile();
@@ -219,8 +219,8 @@ public class SkinManager {
     /**
      * Restores a player's cached skin when they join
      */
-    public static void restoreSkin(ServerPlayerEntity player) {
-        SkinData cachedSkin = skinCache.get(player.getUuid());
+    public static void restoreSkin(ServerPlayer player) {
+        SkinData cachedSkin = skinCache.get(player.getUUID());
         if (cachedSkin != null) {
             applySkin(player, cachedSkin);
             TModFabric.LOGGER.info("Restored skin for player: " + player.getName().getString());
@@ -231,9 +231,9 @@ public class SkinManager {
      * Automatically fetches and caches a player's real Mojang skin if not already
      * cached
      */
-    public static void autoFetchSkin(ServerPlayerEntity player) {
+    public static void autoFetchSkin(ServerPlayer player) {
         // Check if player already has a cached skin
-        if (skinCache.containsKey(player.getUuid())) {
+        if (skinCache.containsKey(player.getUUID())) {
             return; // Already have a skin cached
         }
 
@@ -253,11 +253,11 @@ public class SkinManager {
                     if (skinDataOpt.isPresent() && skinDataOpt.get().isValid()) {
                         SkinData skinData = skinDataOpt.get();
                         // Cache the player's real Mojang skin
-                        skinCache.put(player.getUuid(), skinData);
+                        skinCache.put(player.getUUID(), skinData);
                         TModFabric.LOGGER.info("Cached Mojang skin for: " + playerName);
 
                         // Apply it to their GameProfile
-                        MinecraftServer server = player.getCommandSource().getServer();
+                        MinecraftServer server = player.createCommandSourceStack().getServer();
                         if (server != null) {
                             server.execute(() -> {
                                 applySkin(player, skinData);

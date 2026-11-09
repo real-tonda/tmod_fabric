@@ -2,26 +2,27 @@ package com.togun.tmod.commands;
 
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 
 public class TpsCommand {
 
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(CommandManager.literal("tps")
+            dispatcher.register(Commands.literal("tps")
                     .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source, "tmod.command.tps",
                             0)) // Anyone can use
                     .executes(TpsCommand::execute));
         });
     }
 
-    private static int execute(CommandContext<ServerCommandSource> context) {
-        ServerCommandSource source = context.getSource();
+    private static int execute(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
 
-        // Get TPS from server
-        double tps = Math.min(20.0, 1000.0 / source.getServer().getAverageTickTime());
+        // getAverageTickTimeNanos returns nanoseconds in modern Minecraft
+        double avgTickTimeMs = source.getServer().getAverageTickTimeNanos() / 1_000_000.0;
+        double tps = Math.min(20.0, 1000.0 / avgTickTimeMs);
 
         // Format TPS with color coding
         String tpsColor;
@@ -35,12 +36,9 @@ public class TpsCommand {
             tpsColor = "§c"; // Red - Poor
         }
 
-        // Get average tick time in milliseconds
-        float avgTickTime = source.getServer().getAverageTickTime();
-
-        source.sendFeedback(() -> Text.literal(
+        source.sendSuccess(() -> Component.literal(
                 "§7[§bTPS§7] §fCurrent TPS: " + tpsColor + String.format("%.2f", tps) +
-                        " §7(Avg Tick: §f" + String.format("%.2f", avgTickTime) + "ms§7)"),
+                        " §7(Avg Tick: §f" + String.format("%.2f", avgTickTimeMs) + "ms§7)"),
                 false);
 
         return 1;

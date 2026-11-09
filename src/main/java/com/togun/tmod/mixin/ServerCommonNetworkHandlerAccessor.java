@@ -1,9 +1,9 @@
 package com.togun.tmod.mixin;
 
-import net.minecraft.server.network.ServerCommonNetworkHandler;
+import net.minecraft.server.network.ServerCommonPacketListenerImpl;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(ServerCommonNetworkHandler.class)
+@Mixin(ServerCommonPacketListenerImpl.class)
 public interface ServerCommonNetworkHandlerAccessor {
     // Redundant - getLatency() is already public
 }

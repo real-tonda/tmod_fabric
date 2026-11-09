@@ -1,27 +1,27 @@
 package com.togun.tmod.mixin;
 
 import com.togun.tmod.commands.GodCommand;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(ServerPlayerEntity.class)
+@Mixin(ServerPlayer.class)
 public class GodModeMixin {
     
     /**
      * Prevents players in god mode from dying
      * They can take damage but health never goes below 1.0 (0.5 hearts)
      */
-    @Inject(method = "damage", at = @At("RETURN"))
-    private void preventDeathInGodMode(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+    @Inject(method = "hurtServer", at = @At("RETURN"))
+    private void preventDeathInGodMode(ServerLevel world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        ServerPlayer player = (ServerPlayer) (Object) this;
         
-        if (GodCommand.hasGodMode(player.getUuid())) {
+        if (GodCommand.hasGodMode(player.getUUID())) {
             // Ensure health never drops below 1.0 (0.5 hearts)
             if (player.getHealth() < 1.0f) {
                 player.setHealth(1.0f);
@@ -33,11 +33,11 @@ public class GodModeMixin {
      * Intercepts the death event itself to prevent death
      * This is a failsafe in case damage reduces health to 0 or below
      */
-    @Inject(method = "onDeath", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "die", at = @At("HEAD"), cancellable = true)
     private void preventDeathEvent(DamageSource damageSource, CallbackInfo ci) {
-        ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+        ServerPlayer player = (ServerPlayer) (Object) this;
         
-        if (GodCommand.hasGodMode(player.getUuid())) {
+        if (GodCommand.hasGodMode(player.getUUID())) {
             // Cancel the death event
             ci.cancel();
             
@@ -49,4 +49,3 @@ public class GodModeMixin {
         }
     }
 }
-

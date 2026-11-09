@@ -2,9 +2,9 @@ package com.togun.tmod.mixin;
 
 import com.togun.tmod.mixin.EntityAccessor;
 import com.togun.tmod.config.TutilsConfigManager;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.village.TradeOffer;
-import net.minecraft.village.TradeOfferList;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Server-side mixin to automatically restock villager trades when enabled
  */
-@Mixin(VillagerEntity.class)
+@Mixin(Villager.class)
 public class VillagerEntityMixin {
 
     @Unique
@@ -27,10 +27,10 @@ public class VillagerEntityMixin {
      */
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
-        VillagerEntity villager = (VillagerEntity) (Object) this;
+        Villager villager = (Villager) (Object) this;
 
         // Only run on server side
-        if (((EntityAccessor) villager).getLevelField().isClient()) {
+        if (((EntityAccessor) villager).getLevelField().isClientSide()) {
             return;
         }
 
@@ -47,15 +47,15 @@ public class VillagerEntityMixin {
         tutilsRestockCheckCounter = 0;
 
         // Check if villager has trades
-        TradeOfferList offers = villager.getOffers();
+        MerchantOffers offers = villager.getOffers();
         if (offers == null || offers.isEmpty()) {
             return;
         }
 
         // Check if any trades are out of stock and restock if needed
         boolean needsRestock = false;
-        for (TradeOffer offer : offers) {
-            if (offer.isDisabled()) {
+        for (MerchantOffer offer : offers) {
+            if (offer.isOutOfStock()) {
                 needsRestock = true;
                 break;
             }

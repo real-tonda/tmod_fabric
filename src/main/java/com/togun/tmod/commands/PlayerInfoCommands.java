@@ -5,12 +5,12 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.togun.tmod.TModFabric;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.UserCache;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.GameProfileCache;
 
 import java.lang.reflect.Field;
 import java.util.Optional;
@@ -20,43 +20,43 @@ public class PlayerInfoCommands {
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             // /seen command - available to all players
-            dispatcher.register(CommandManager.literal("seen")
+            dispatcher.register(Commands.literal("seen")
                     .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source,
                             "tmod.command.seen", 0))
-                    .then(CommandManager.argument("player", StringArgumentType.string())
+                    .then(Commands.argument("player", StringArgumentType.string())
                             .executes(PlayerInfoCommands::executeSeen)));
 
             // /whois command - requires operator
-            dispatcher.register(CommandManager.literal("whois")
+            dispatcher.register(Commands.literal("whois")
                     .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source,
                             "tmod.command.whois", 4))
-                    .then(CommandManager.argument("player", StringArgumentType.string())
+                    .then(Commands.argument("player", StringArgumentType.string())
                             .executes(PlayerInfoCommands::executeWhois)));
         });
     }
 
-    private static int executeSeen(CommandContext<ServerCommandSource> context) {
-        ServerCommandSource source = context.getSource();
+    private static int executeSeen(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
         String playerName = StringArgumentType.getString(context, "player");
 
         // Check if player is currently online
-        ServerPlayerEntity onlinePlayer = source.getServer().getPlayerManager().getPlayer(playerName);
+        ServerPlayer onlinePlayer = source.getServer().getPlayerList().getPlayerByName(playerName);
 
         if (onlinePlayer != null) {
-            source.sendFeedback(() -> Text.literal("§a" + playerName + " is currently online!"), false);
+            source.sendSuccess(() -> Component.literal("§a" + playerName + " is currently online!"), false);
             return 1;
         }
 
         // Try to get player from user cache
-        UserCache userCache = getUserCache(source.getServer());
+        GameProfileCache userCache = getUserCache(source.getServer());
         if (userCache == null) {
-            source.sendError(Text.literal("Error: Could not access Server UserCache."));
+            source.sendFailure(Component.literal("Error: Could not access Server UserCache."));
             return 0;
         }
-        Optional<?> entryOpt = userCache.findByName(playerName);
+        Optional<?> entryOpt = userCache.get(playerName);
 
         if (entryOpt.isEmpty()) {
-            source.sendError(Text.literal("Player '" + playerName + "' has never joined the server."));
+            source.sendFailure(Component.literal("Player '" + playerName + "' has never joined the server."));
             return 0;
         }
 
@@ -72,20 +72,20 @@ public class PlayerInfoCommands {
                 try {
                     profile = (GameProfile) entry.getClass().getMethod("getProfile").invoke(entry);
                 } catch (Exception e2) {
-                    source.sendError(Text.literal("Error: Could not retrieve GameProfile for " + playerName));
+                    source.sendFailure(Component.literal("Error: Could not retrieve GameProfile for " + playerName));
                     return 0;
                 }
             }
         }
 
         if (profile == null) {
-            source.sendError(Text.literal("Error: GameProfile entry is empty for " + playerName));
+            source.sendFailure(Component.literal("Error: GameProfile entry is empty for " + playerName));
             return 0;
         }
 
         final GameProfile finalProfile = profile;
 
-        source.sendFeedback(() -> Text.literal(
+        source.sendSuccess(() -> Component.literal(
                 "§7Player §f" + finalProfile.name() + " §7is §coffline§7.\n" +
                         "§7UUID: §f" + finalProfile.id() + "\n" +
                         "§7Last seen data is not tracked (requires additional implementation)."),
@@ -94,24 +94,24 @@ public class PlayerInfoCommands {
         return 1;
     }
 
-    private static int executeWhois(CommandContext<ServerCommandSource> context) {
-        ServerCommandSource source = context.getSource();
+    private static int executeWhois(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
         String playerName = StringArgumentType.getString(context, "player");
 
-        ServerPlayerEntity player = source.getServer().getPlayerManager().getPlayer(playerName);
+        ServerPlayer player = source.getServer().getPlayerList().getPlayerByName(playerName);
 
         if (player == null) {
-            source.sendError(Text.literal("Player '" + playerName + "' is not online!"));
+            source.sendFailure(Component.literal("Player '" + playerName + "' is not online!"));
             return 0;
         }
 
         // Gather player information
         String name = player.getName().getString();
-        String uuid = player.getUuidAsString();
-        String gamemode = player.interactionManager.getGameMode().name();
-        String world = player.getEntityWorld().getRegistryKey().getValue().toString();
-        int ping = player.networkHandler.getLatency();
-        String ip = player.getIp();
+        String uuid = player.getStringUUID();
+        String gamemode = player.gameMode.getGameModeForPlayer().name();
+        String world = player.level().dimension().location().toString();
+        int ping = player.connection.latency();
+        String ip = player.getIpAddress();
         boolean isOp = me.lucko.fabric.api.permissions.v0.Permissions.check(player, "tmod.admin", 4);
 
         // Get position
@@ -122,9 +122,9 @@ public class PlayerInfoCommands {
         // Get health and hunger
         float health = player.getHealth();
         float maxHealth = player.getMaxHealth();
-        int hunger = player.getHungerManager().getFoodLevel();
+        int hunger = player.getFoodData().getFoodLevel();
 
-        source.sendFeedback(() -> Text.literal(
+        source.sendSuccess(() -> Component.literal(
                 "§7§m                §r §bPlayer Info §7§m                §r\n" +
                         "§7Name: §f" + name + "\n" +
                         "§7UUID: §f" + uuid + "\n" +
@@ -146,12 +146,12 @@ public class PlayerInfoCommands {
      * Helper to get UserCache via reflection to avoid remapping issues across
      * versions.
      */
-    private static UserCache getUserCache(MinecraftServer server) {
+    private static GameProfileCache getUserCache(MinecraftServer server) {
         try {
             for (Field field : MinecraftServer.class.getDeclaredFields()) {
-                if (field.getType() == UserCache.class) {
+                if (field.getType() == GameProfileCache.class) {
                     field.setAccessible(true);
-                    return (UserCache) field.get(server);
+                    return (GameProfileCache) field.get(server);
                 }
             }
         } catch (Exception e) {

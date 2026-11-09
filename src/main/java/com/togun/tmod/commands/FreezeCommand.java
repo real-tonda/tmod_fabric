@@ -4,11 +4,11 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -17,11 +17,11 @@ import java.util.UUID;
 public class FreezeCommand {
     private static final Set<UUID> frozenPlayers = new HashSet<>();
 
-    private static final SuggestionProvider<ServerCommandSource> PLAYER_SUGGESTIONS = (context, builder) -> {
+    private static final SuggestionProvider<CommandSourceStack> PLAYER_SUGGESTIONS = (context, builder) -> {
         MinecraftServer server = context.getSource().getServer();
         String remaining = builder.getRemaining().toLowerCase();
 
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             String playerName = player.getName().getString();
             if (playerName.toLowerCase().startsWith(remaining)) {
                 builder.suggest(playerName);
@@ -33,40 +33,40 @@ public class FreezeCommand {
 
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(CommandManager.literal("freeze")
+            dispatcher.register(Commands.literal("freeze")
                     .requires(source -> me.lucko.fabric.api.permissions.v0.Permissions.check(source,
                             "tmod.command.freeze", 4))
-                    .then(CommandManager.argument("player", StringArgumentType.string())
+                    .then(Commands.argument("player", StringArgumentType.string())
                             .suggests(PLAYER_SUGGESTIONS)
                             .executes(FreezeCommand::execute)));
         });
     }
 
-    private static int execute(CommandContext<ServerCommandSource> context) {
-        ServerCommandSource source = context.getSource();
+    private static int execute(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
         String playerName = StringArgumentType.getString(context, "player");
 
-        ServerPlayerEntity targetPlayer = source.getServer().getPlayerManager().getPlayer(playerName);
+        ServerPlayer targetPlayer = source.getServer().getPlayerList().getPlayerByName(playerName);
 
         if (targetPlayer == null) {
-            source.sendError(Text.literal("Player '" + playerName + "' not found!"));
+            source.sendFailure(Component.literal("Player '" + playerName + "' not found!"));
             return 0;
         }
 
-        UUID playerId = targetPlayer.getUuid();
+        UUID playerId = targetPlayer.getUUID();
         boolean isFrozen = frozenPlayers.contains(playerId);
         String targetName = targetPlayer.getName().getString();
 
         if (isFrozen) {
             // Unfreeze
             frozenPlayers.remove(playerId);
-            targetPlayer.sendMessage(Text.literal("§aYou have been unfrozen!"), false);
-            source.sendFeedback(() -> Text.literal("§a" + targetName + " has been unfrozen."), true);
+            targetPlayer.sendSystemMessage(Component.literal("§aYou have been unfrozen!"));
+            source.sendSuccess(() -> Component.literal("§a" + targetName + " has been unfrozen."), true);
         } else {
             // Freeze
             frozenPlayers.add(playerId);
-            targetPlayer.sendMessage(Text.literal("§cYou have been frozen by a staff member!"), false);
-            source.sendFeedback(() -> Text.literal("§c" + targetName + " has been frozen."), true);
+            targetPlayer.sendSystemMessage(Component.literal("§cYou have been frozen by a staff member!"));
+            source.sendSuccess(() -> Component.literal("§c" + targetName + " has been frozen."), true);
         }
 
         return 1;
