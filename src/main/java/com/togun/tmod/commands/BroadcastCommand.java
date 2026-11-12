@@ -1,5 +1,6 @@
 package com.togun.tmod.commands;
 
+import com.togun.tmod.util.Perms;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -21,7 +22,7 @@ public class BroadcastCommand {
     private static void registerBroadcast(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
         // Main command: /broadcast
         dispatcher.register(CommandManager.literal("broadcast")
-            .requires(source -> source.hasPermissionLevel(4))
+            .requires(Perms.require("tmod.command.broadcast", 4))
             .then(CommandManager.argument("message", StringArgumentType.greedyString())
                 .executes(context -> executeBroadcast(context))
             )
@@ -29,7 +30,7 @@ public class BroadcastCommand {
         
         // Alias: /bc
         dispatcher.register(CommandManager.literal("bc")
-            .requires(source -> source.hasPermissionLevel(4))
+            .requires(Perms.require("tmod.command.broadcast", 4))
             .then(CommandManager.argument("message", StringArgumentType.greedyString())
                 .executes(context -> executeBroadcast(context))
             )

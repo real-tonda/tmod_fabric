@@ -1,5 +1,6 @@
 package com.togun.tmod.commands;
 
+import com.togun.tmod.util.Perms;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -34,7 +35,7 @@ public class ItemBlacklistCommand {
     private static void registerItemBlacklist(CommandDispatcher<ServerCommandSource> dispatcher, 
                                               CommandRegistryAccess registryAccess) {
         dispatcher.register(CommandManager.literal("blacklist")
-            .requires(source -> source.hasPermissionLevel(4))
+            .requires(Perms.require("tmod.command.blacklist", 4))
             
             // /blacklist add <item>
             .then(CommandManager.literal("add")

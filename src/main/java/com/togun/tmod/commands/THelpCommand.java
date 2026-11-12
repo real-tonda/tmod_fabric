@@ -1,5 +1,6 @@
 package com.togun.tmod.commands;
 
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.CommandNode;
@@ -107,7 +108,7 @@ public class THelpCommand {
      * Gets the permission level of the command source
      */
     private static int getPermissionLevel(ServerCommandSource source) {
-        if (source.hasPermissionLevel(4))
+        if (Permissions.check(source, "tmod.admin", 4))
             return 4;
         return 0;
     }

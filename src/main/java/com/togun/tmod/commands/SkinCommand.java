@@ -1,5 +1,6 @@
 package com.togun.tmod.commands;
 
+import com.togun.tmod.util.Perms;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
@@ -36,7 +37,7 @@ public class SkinCommand {
                         .executes(SkinCommand::setSkinSelf)
                         .then(CommandManager.argument("target", StringArgumentType.string())
                             .suggests(PLAYER_SUGGESTIONS)
-                            .requires(source -> source.hasPermissionLevel(4))
+                            .requires(Perms.require("tmod.command.skin.other", 4))
                             .executes(SkinCommand::setSkinOther))))
                 
                 // /skin clear - Clear your custom skin
@@ -44,7 +45,7 @@ public class SkinCommand {
                     .executes(SkinCommand::clearSkinSelf)
                     .then(CommandManager.argument("target", StringArgumentType.string())
                         .suggests(PLAYER_SUGGESTIONS)
-                        .requires(source -> source.hasPermissionLevel(4))
+                        .requires(Perms.require("tmod.command.skin.other", 4))
                         .executes(SkinCommand::clearSkinOther)))
                 
                 // /skin update - Refresh your skin
@@ -52,7 +53,7 @@ public class SkinCommand {
                     .executes(SkinCommand::updateSkinSelf)
                     .then(CommandManager.argument("target", StringArgumentType.string())
                         .suggests(PLAYER_SUGGESTIONS)
-                        .requires(source -> source.hasPermissionLevel(4))
+                        .requires(Perms.require("tmod.command.skin.other", 4))
                         .executes(SkinCommand::updateSkinOther))));
         });
     }

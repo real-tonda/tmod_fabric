@@ -1,5 +1,6 @@
 package com.togun.tmod.commands;
 
+import com.togun.tmod.util.Perms;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -37,7 +38,7 @@ public class ModConfigCommand {
     private static void registerModConfig(CommandDispatcher<ServerCommandSource> dispatcher, 
                                           CommandRegistryAccess registryAccess) {
         dispatcher.register(CommandManager.literal("modcfg")
-            .requires(source -> source.hasPermissionLevel(4))
+            .requires(Perms.require("tmod.command.modcfg", 4))
             
             // /modcfg list - Show all features and their states
             .then(CommandManager.literal("list")

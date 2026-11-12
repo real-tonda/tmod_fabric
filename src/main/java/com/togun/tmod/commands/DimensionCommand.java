@@ -1,5 +1,6 @@
 package com.togun.tmod.commands;
 
+import com.togun.tmod.util.Perms;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -44,19 +45,19 @@ public class DimensionCommand {
                                                    CommandRegistryAccess registryAccess) {
         // /dims - List all dimensions
         dispatcher.register(CommandManager.literal("dims")
-            .requires(source -> source.hasPermissionLevel(4))
+            .requires(Perms.require("tmod.command.dims", 4))
             .executes(context -> executeListDimensions(context))
         );
         
         // Alias: /dimensions
         dispatcher.register(CommandManager.literal("dimensions")
-            .requires(source -> source.hasPermissionLevel(4))
+            .requires(Perms.require("tmod.command.dimensions", 4))
             .executes(context -> executeListDimensions(context))
         );
         
         // /dim <dimension> - Teleport to dimension
         dispatcher.register(CommandManager.literal("dim")
-            .requires(source -> source.hasPermissionLevel(4))
+            .requires(Perms.require("tmod.command.dim", 4))
             .then(CommandManager.argument("dimension", StringArgumentType.string())
                 .suggests(DIMENSION_SUGGESTIONS)
                 .executes(context -> executeTeleportToDimension(context))

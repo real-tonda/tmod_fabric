@@ -1,5 +1,6 @@
 package com.togun.tmod.commands;
 
+import com.togun.tmod.util.Perms;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -32,7 +33,7 @@ public class GamemodeCommands {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             // /gmc - Creative mode
             dispatcher.register(CommandManager.literal("gmc")
-                .requires(source -> source.hasPermissionLevel(4)) // Requires operator status (level 4)
+                .requires(Perms.require("tmod.command.gamemode", 4)) // Requires operator status (level 4)
                 .executes(GamemodeCommands::setCreativeSelf)
                 .then(CommandManager.argument("player", StringArgumentType.string())
                     .suggests(PLAYER_SUGGESTIONS)
@@ -40,7 +41,7 @@ public class GamemodeCommands {
             
             // /gms - Survival mode
             dispatcher.register(CommandManager.literal("gms")
-                .requires(source -> source.hasPermissionLevel(4)) // Requires operator status (level 4)
+                .requires(Perms.require("tmod.command.gamemode", 4)) // Requires operator status (level 4)
                 .executes(GamemodeCommands::setSurvivalSelf)
                 .then(CommandManager.argument("player", StringArgumentType.string())
                     .suggests(PLAYER_SUGGESTIONS)
@@ -48,7 +49,7 @@ public class GamemodeCommands {
             
             // /gma - Adventure mode
             dispatcher.register(CommandManager.literal("gma")
-                .requires(source -> source.hasPermissionLevel(4)) // Requires operator status (level 4)
+                .requires(Perms.require("tmod.command.gamemode", 4)) // Requires operator status (level 4)
                 .executes(GamemodeCommands::setAdventureSelf)
                 .then(CommandManager.argument("player", StringArgumentType.string())
                     .suggests(PLAYER_SUGGESTIONS)
@@ -56,7 +57,7 @@ public class GamemodeCommands {
             
             // /gmsp - Spectator mode
             dispatcher.register(CommandManager.literal("gmsp")
-                .requires(source -> source.hasPermissionLevel(4)) // Requires operator status (level 4)
+                .requires(Perms.require("tmod.command.gamemode", 4)) // Requires operator status (level 4)
                 .executes(GamemodeCommands::setSpectatorSelf)
                 .then(CommandManager.argument("player", StringArgumentType.string())
                     .suggests(PLAYER_SUGGESTIONS)

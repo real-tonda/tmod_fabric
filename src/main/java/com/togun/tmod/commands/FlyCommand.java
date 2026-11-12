@@ -1,5 +1,6 @@
 package com.togun.tmod.commands;
 
+import com.togun.tmod.util.Perms;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -40,7 +41,7 @@ public class FlyCommand {
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal("fly")
-                .requires(source -> source.hasPermissionLevel(4)) // Requires operator status (level 4)
+                .requires(Perms.require("tmod.command.fly", 4)) // Requires operator status (level 4)
                 .executes(FlyCommand::executeSelf)
                 .then(CommandManager.argument("player", StringArgumentType.string())
                     .suggests(PLAYER_SUGGESTIONS)

@@ -12,13 +12,16 @@ import com.togun.tmod.skin.SkinData;
 import com.togun.tmod.skin.SkinManager;
 import com.togun.tmod.util.TickMetrics;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.TypedActionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +51,16 @@ public class TModFabric implements ModInitializer {
         // Ensure operator status when server starts (handles ops.txt edits)
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             ensureOperatorStatus(server);
+        });
+
+        // Block use of blacklisted items (also covers thrown items like ender pearls)
+        UseItemCallback.EVENT.register((player, world, hand) -> {
+            ItemStack stack = player.getStackInHand(hand);
+            if (!world.isClient && ItemBlacklistManager.isBlacklisted(stack)) {
+                player.sendMessage(Text.literal("§cThis item is blacklisted and cannot be used!"), true);
+                return TypedActionResult.fail(stack);
+            }
+            return TypedActionResult.pass(stack);
         });
 
         // Register commands

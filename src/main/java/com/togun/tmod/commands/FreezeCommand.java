@@ -1,5 +1,7 @@
 package com.togun.tmod.commands;
 
+import com.togun.tmod.util.Perms;
+import com.togun.tmod.util.PersistentUuidSet;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
@@ -10,12 +12,10 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 public class FreezeCommand {
-    private static final Set<UUID> frozenPlayers = new HashSet<>();
+    private static final PersistentUuidSet frozenPlayers = new PersistentUuidSet("tmod_frozen.json");
     
     private static final SuggestionProvider<ServerCommandSource> PLAYER_SUGGESTIONS = (context, builder) -> {
         MinecraftServer server = context.getSource().getServer();
@@ -34,7 +34,7 @@ public class FreezeCommand {
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal("freeze")
-                .requires(source -> source.hasPermissionLevel(4))
+                .requires(Perms.require("tmod.command.freeze", 4))
                 .then(CommandManager.argument("player", StringArgumentType.string())
                     .suggests(PLAYER_SUGGESTIONS)
                     .executes(FreezeCommand::execute)));

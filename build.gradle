@@ -11,6 +11,7 @@ base {
 }
 
 repositories {
+    mavenCentral()
     // Add repositories to retrieve artifacts from in here.
     // You should only use this when depending on other mods because
     // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
@@ -35,6 +36,9 @@ dependencies {
     // Fabric API
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     
+    // Permission nodes (LuckPerms etc.), bundled into the mod jar
+    include(modImplementation("me.lucko:fabric-permissions-api:0.3.1"))
+
     // Gson for JSON parsing (included with Minecraft)
     implementation "com.google.code.gson:gson:2.10.1"
 }

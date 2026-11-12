@@ -66,7 +66,7 @@ public class TPAllowListManager {
      */
     public static boolean canUseTP(ServerCommandSource source) {
         // OPs can always use /tp (permission level 2+)
-        if (source.hasPermissionLevel(2)) {
+        if (me.lucko.fabric.api.permissions.v0.Permissions.check(source, "tmod.command.tp", 2)) {
             return true;
         }
 

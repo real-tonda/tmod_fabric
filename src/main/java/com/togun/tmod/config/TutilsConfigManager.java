@@ -25,11 +25,13 @@ public class TutilsConfigManager {
     public static final String VILLAGER_INFINITE_RESTOCKS = "villager.infiniteRestocks";
     public static final String VILLAGER_FASTER_BREEDING = "villager.fasterBreeding";
     public static final String ANVIL_NOT_EXPENSIVE = "anvil.notExpensive";
+    public static final String CREEPER_NO_GRIEFING = "creeper.noGriefing";
 
     private static final String[] VALID_BOOLEAN_KEYS = {
             VILLAGER_INFINITE_RESTOCKS,
             VILLAGER_FASTER_BREEDING,
-            ANVIL_NOT_EXPENSIVE
+            ANVIL_NOT_EXPENSIVE,
+            CREEPER_NO_GRIEFING
     };
 
     // Valid integer config keys

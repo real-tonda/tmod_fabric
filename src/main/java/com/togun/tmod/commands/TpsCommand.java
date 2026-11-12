@@ -1,5 +1,6 @@
 package com.togun.tmod.commands;
 
+import com.togun.tmod.util.Perms;
 import com.mojang.brigadier.context.CommandContext;
 import com.togun.tmod.util.TickMetrics;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -12,7 +13,7 @@ public class TpsCommand {
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal("tps")
-                .requires(source -> source.hasPermissionLevel(0)) // Anyone can use
+                .requires(Perms.require("tmod.command.tps", 0)) // Anyone can use
                 .executes(TpsCommand::execute));
         });
     }

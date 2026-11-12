@@ -1,5 +1,6 @@
 package com.togun.tmod.commands;
 
+import com.togun.tmod.util.Perms;
 import com.mojang.brigadier.context.CommandContext;
 import com.togun.tmod.config.TPAllowListManager;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -12,7 +13,7 @@ public class TModCommand {
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal("tmod")
-                    .requires(source -> source.hasPermissionLevel(4))
+                    .requires(Perms.require("tmod.command.tmod", 4))
                     .then(CommandManager.literal("reload")
                             .executes(TModCommand::executeReload)));
         });

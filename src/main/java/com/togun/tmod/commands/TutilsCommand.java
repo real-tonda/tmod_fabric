@@ -1,6 +1,7 @@
 package com.togun.tmod.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.togun.tmod.util.Perms;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -29,6 +30,7 @@ public class TutilsCommand {
 
                 // /tutils cfg <key> [value] - handles both querying and setting configs
                 .then(CommandManager.literal("cfg")
+                        .requires(Perms.require("tmod.command.tutils", 4))
                         .then(CommandManager.argument("configKey", StringArgumentType.string())
                                 .suggests((context, builder) -> {
                                     // Suggest both boolean and integer keys
@@ -37,6 +39,7 @@ public class TutilsCommand {
                                                     TutilsConfigManager.VILLAGER_INFINITE_RESTOCKS,
                                                     TutilsConfigManager.VILLAGER_FASTER_BREEDING,
                                                     TutilsConfigManager.ANVIL_NOT_EXPENSIVE,
+                                                    TutilsConfigManager.CREEPER_NO_GRIEFING,
                                                     TutilsConfigManager.REDSTONE_HOPPER_TICKS
                                             },
                                             builder);
@@ -48,6 +51,7 @@ public class TutilsCommand {
 
                 // /tutils repeatcmd <command> <howmanytimes>
                 .then(CommandManager.literal("repeatcmd")
+                        .requires(Perms.require("tmod.command.tutils", 4))
                         .then(CommandManager.argument("command", StringArgumentType.greedyString())
                                 .then(CommandManager.argument("times", IntegerArgumentType.integer(1, 1000))
                                         .executes(context -> executeRepeatCmd(context))))));
@@ -136,7 +140,7 @@ public class TutilsCommand {
         source.sendError(Text.literal("§cInvalid config key: " + key));
         source.sendFeedback(
                 () -> Text.literal(
-                        "§7Valid keys: villager.infiniteRestocks, villager.fasterBreeding, anvil.notExpensive, redstone.hopperTicks"),
+                        "§7Valid keys: villager.infiniteRestocks, villager.fasterBreeding, anvil.notExpensive, creeper.noGriefing, redstone.hopperTicks"),
                 false);
         return 0;
     }

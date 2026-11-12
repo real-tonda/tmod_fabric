@@ -34,6 +34,10 @@ A server-side Fabric mod for Minecraft 1.20.1.
         /blacklist <add|remove|list|clear> - Manage item blacklist *currently broken*
         /modcfg <list|enable|disable|toggle|info> - Configure mod features
 
+## Permissions
+
+Every command checks a permission node (LuckPerms or any fabric-permissions-api provider), falling back to the op level in the list above. Nodes are `tmod.command.<name>`, for example `tmod.command.fly` or `tmod.command.seen.position` (see last coordinates). `/tutils cfg` and `/tutils repeatcmd` use `tmod.command.tutils` (op level 4).
+
 ## Building
 
 1. Clone this repository
