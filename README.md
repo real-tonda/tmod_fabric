@@ -17,6 +17,7 @@ A server-side Fabric mod for Minecraft 1.20.1.
         /ping [player] Show player latency
         /seen <player> Check when player was last online
         /skin <set|clear|update> [args] Manage player skins
+        /premium [off] Lock your name to real Minecraft accounts (offline-mode servers only)
         
     Operator Commands (Permission Level 4)
         /fly [player] - Toggle flight mode

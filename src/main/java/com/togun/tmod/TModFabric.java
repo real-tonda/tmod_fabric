@@ -79,6 +79,7 @@ public class TModFabric implements ModInitializer {
         ModConfigCommand.register();
         TModCommand.register();
         TutilsCommand.register();
+        PremiumCommand.register();
 
         // Register player join event to restore fly state and handle skins
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {

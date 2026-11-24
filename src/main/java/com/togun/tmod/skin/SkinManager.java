@@ -27,7 +27,7 @@ public class SkinManager {
     /**
      * Fetches a player's UUID from Mojang API
      */
-    private static CompletableFuture<String> fetchUUID(String playerName) {
+    public static CompletableFuture<String> fetchUUID(String playerName) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 URL url = URI.create(MOJANG_API_UUID + playerName).toURL();

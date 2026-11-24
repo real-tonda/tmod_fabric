@@ -13,6 +13,7 @@
     "GodModeMixin",
     "LivingEntityMixin",
     "PlayerManagerMixin",
+    "ServerLoginNetworkHandlerMixin",
     "ServerPlayerEntityMixin",
     "TeleportCommandMixin",
     "HopperBlockEntityMixin",

@@ -24,6 +24,8 @@ public class THelpCommand {
         TMOD_COMMANDS.put("ping", new CommandInfo("/ping [player]", "Show player latency", 0));
         TMOD_COMMANDS.put("seen", new CommandInfo("/seen <player>", "Check when player was last online", 0));
         TMOD_COMMANDS.put("skin", new CommandInfo("/skin <set|clear|update> [args]", "Manage player skins", 0));
+        TMOD_COMMANDS.put("premium",
+                new CommandInfo("/premium [off]", "Lock your name to real Minecraft accounts (offline mode)", 0));
 
         // === Operator Commands (Level 4) ===
         TMOD_COMMANDS.put("fly", new CommandInfo("/fly [player]", "Toggle flight mode", 4));
